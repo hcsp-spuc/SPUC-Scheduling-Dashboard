@@ -267,7 +267,7 @@ body {
 
 .form-title {
     color: white;
-    font-size: 1.8vh;
+    font-size: 24px;
     font-weight: 600;
     margin-bottom: 25px;
 }
@@ -275,13 +275,13 @@ body {
 .form-group {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 45px;
     margin-bottom: 18px;
 }
 
 .form-label {
     color: white;
-    font-size: 1.6vh;
+    font-size: 20px;
     font-weight: 600;
     letter-spacing: 1px;
     width: 100px;
@@ -290,12 +290,12 @@ body {
 
 .form-input {
     flex: 1;
-    padding: 10px 15px;
+    padding: 15px 15px;
     border: none;
     border-radius: 6px;
     background: white;
     font-family: 'Montserrat', sans-serif;
-    font-size: 1.5vh;
+    font-size: 18px;
     color: #555;
     outline: none;
 }
@@ -308,7 +308,7 @@ body {
     display: flex;
     gap: 15px;
     margin-top: 25px;
-    padding-left: 120px;
+    padding-left: 145px;
 }
 
 .btn-add {
