@@ -470,6 +470,10 @@ option {
     color: #333;
 }
 
+option[value="custom"] {
+    font-weight: bold;
+}
+
 .time-slot-container {
     position: relative;
     width: 100%;
@@ -480,6 +484,26 @@ option {
 }
 
 .custom-time-input {
+    width: 100%;
+    padding: 12px 15px;
+    border: none;
+    border-radius: 5px;
+    font-size: 18px;
+    background: white;
+    color: #333;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.program-slot-container {
+    position: relative;
+    width: 100%;
+}
+
+.program-slot-container select {
+    width: 100%;
+}
+
+.custom-program-input {
     width: 100%;
     padding: 12px 15px;
     border: none;

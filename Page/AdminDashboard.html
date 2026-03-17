@@ -112,9 +112,12 @@
                     </div>
                     <div class="form-group">
                         <label for="program">SELECT PROGRAM</label>
-                        <select id="program" class="form-control" required>
-                            <option value="">Choose the program</option>
-                        </select>
+                        <div class="program-slot-container">
+                            <select id="program" class="form-control" required>
+                                <option value="">Choose the program</option>
+                            </select>
+                            <input type="text" id="customProgramInput" class="form-control custom-program-input" placeholder="Enter custom program" style="display: none;">
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="description">DESCRIPTION</label>

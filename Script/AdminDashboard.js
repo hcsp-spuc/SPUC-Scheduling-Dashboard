@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, getDocs, addDoc, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, getDocs, addDoc, query, where, setDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDzSCJ8XellJRvOSBZ7cTCA2OcmFh8jSrs",
@@ -156,9 +156,43 @@ function isToday(date) {
            date.getFullYear() === today.getFullYear();
 }
 
-async function loadTimeSlots() {
+function setupTimeSlotListeners() {
     const timeSlotSelect = document.getElementById('timeSlot');
     const customTimeInput = document.getElementById('customTimeInput');
+    
+    timeSlotSelect.addEventListener('change', (e) => {
+        if (e.target.value === 'custom') {
+            timeSlotSelect.style.display = 'none';
+            customTimeInput.style.display = 'block';
+            customTimeInput.value = '';
+            customTimeInput.focus();
+        } else if (e.target.value !== '') {
+            customTimeInput.style.display = 'none';
+            timeSlotSelect.style.display = 'block';
+        }
+    });
+    
+    customTimeInput.addEventListener('blur', () => {
+        if (customTimeInput.value.trim() !== '') {
+            timeSlotSelect.value = customTimeInput.value;
+            customTimeInput.style.display = 'none';
+            timeSlotSelect.style.display = 'block';
+        } else {
+            timeSlotSelect.value = '';
+            customTimeInput.style.display = 'none';
+            timeSlotSelect.style.display = 'block';
+        }
+    });
+    
+    customTimeInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            customTimeInput.blur();
+        }
+    });
+}
+
+async function loadTimeSlots() {
+    const timeSlotSelect = document.getElementById('timeSlot');
     timeSlotSelect.innerHTML = '<option value="">Choose time slot</option>';
     
     const amSlots = [
@@ -203,36 +237,40 @@ async function loadTimeSlots() {
     customOption.textContent = 'ADD CUSTOM TIME SLOT';
     timeSlotSelect.appendChild(customOption);
     
-    // Handle custom time slot selection
-    timeSlotSelect.addEventListener('change', (e) => {
+    setupTimeSlotListeners();
+}
+
+function setupProgramListeners() {
+    const programSelect = document.getElementById('program');
+    const customProgramInput = document.getElementById('customProgramInput');
+    
+    programSelect.addEventListener('change', (e) => {
         if (e.target.value === 'custom') {
-            timeSlotSelect.style.display = 'none';
-            customTimeInput.style.display = 'block';
-            customTimeInput.value = '';
-            customTimeInput.focus();
+            programSelect.style.display = 'none';
+            customProgramInput.style.display = 'block';
+            customProgramInput.value = '';
+            customProgramInput.focus();
         } else if (e.target.value !== '') {
-            customTimeInput.style.display = 'none';
-            timeSlotSelect.style.display = 'block';
+            customProgramInput.style.display = 'none';
+            programSelect.style.display = 'block';
         }
     });
     
-    // Handle custom time input blur to switch back to dropdown
-    customTimeInput.addEventListener('blur', () => {
-        if (customTimeInput.value.trim() !== '') {
-            timeSlotSelect.value = customTimeInput.value;
-            customTimeInput.style.display = 'none';
-            timeSlotSelect.style.display = 'block';
+    customProgramInput.addEventListener('blur', () => {
+        if (customProgramInput.value.trim() !== '') {
+            programSelect.value = customProgramInput.value;
+            customProgramInput.style.display = 'none';
+            programSelect.style.display = 'block';
         } else {
-            timeSlotSelect.value = '';
-            customTimeInput.style.display = 'none';
-            timeSlotSelect.style.display = 'block';
+            programSelect.value = '';
+            customProgramInput.style.display = 'none';
+            programSelect.style.display = 'block';
         }
     });
     
-    // Allow Enter key to confirm custom time
-    customTimeInput.addEventListener('keypress', (e) => {
+    customProgramInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
-            customTimeInput.blur();
+            customProgramInput.blur();
         }
     });
 }
@@ -252,6 +290,14 @@ async function loadPrograms() {
     } catch (error) {
         console.error("Error loading programs:", error);
     }
+    
+    // Add custom program option
+    const customOption = document.createElement('option');
+    customOption.value = 'custom';
+    customOption.textContent = 'ADD CUSTOM PROGRAM';
+    programSelect.appendChild(customOption);
+    
+    setupProgramListeners();
 }
 
 document.getElementById('eventForm').addEventListener('submit', async (e) => {
@@ -260,7 +306,11 @@ document.getElementById('eventForm').addEventListener('submit', async (e) => {
     const timeSlotSelect = document.getElementById('timeSlot');
     const customTimeInput = document.getElementById('customTimeInput');
     const timeSlot = timeSlotSelect.style.display === 'none' ? customTimeInput.value : timeSlotSelect.value;
-    const program = document.getElementById('program').value;
+    
+    const programSelect = document.getElementById('program');
+    const customProgramInput = document.getElementById('customProgramInput');
+    const program = programSelect.style.display === 'none' ? customProgramInput.value : programSelect.value;
+    
     const description = document.getElementById('description').value;
     
     if (!timeSlot || !program) {
@@ -269,18 +319,29 @@ document.getElementById('eventForm').addEventListener('submit', async (e) => {
     }
     
     try {
-        await addDoc(collection(db, "events"), {
+        // Get the current count of events
+        const eventsSnapshot = await getDocs(collection(db, "events"));
+        const eventCount = eventsSnapshot.size + 1;
+        const docName = `event${eventCount}`;
+        
+        // Save with custom document name
+        await setDoc(doc(db, "events", docName), {
             date: selectedDate.toDateString(),
             time: timeSlot,
             programName: program,
-            description: description
+            description: description,
+            createdAt: new Date()
         });
         
         alert('Event added successfully!');
         document.getElementById('eventForm').reset();
+        timeSlotSelect.style.display = 'block';
+        customTimeInput.style.display = 'none';
+        programSelect.style.display = 'block';
+        customProgramInput.style.display = 'none';
     } catch (error) {
         console.error("Error adding event:", error);
-        alert('Error adding event');
+        alert('Error adding event: ' + error.message);
     }
 });
 
