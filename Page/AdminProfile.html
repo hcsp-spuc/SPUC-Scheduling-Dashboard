@@ -3,47 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Profile</title>
-    <link rel="stylesheet" href="../Styles/AdminProfile.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Document</title>
+    <link rel="stylesheet" href="/Styles/AdminProfile.css">
 </head>
 <body>
-
-    <!-- Header -->
+     <!-- Header -->
     <header class="admin-header">
-        <div class="header-content">
-            <div class="logo-section">
-                <div class="logo-icon">
-                    <i class="fas fa-shield-halved"></i>
-                </div>
-                <div>
-                    <h1>Admin Profile</h1>
-                    <p>Manage Your Account</p>
+        <div class="header-white">
+            <div class="header-content">
+                <div class="header-left">
+                    <img src="../Assets/HCLogo.png" alt="Hope Channel Logo" class="hc-logo">
+                    <div class="header-text">
+                        <p class="welcome-text">WELCOME TO</p>
+                        <h1 class="channel-name">Hope Channel</h1>
+                        <p class="subtitle-text">SOUTHWESTERN PHILIPPINES</p>
+                    </div>
                 </div>
             </div>
-            <div class="user-menu">
-                <button class="menu-toggle" id="menuToggle">
-                    <i class="fas fa-chevron-down"></i>
-                </button>
-                <div class="dropdown-menu" id="dropdownMenu">
-                    <button class="menu-item" onclick="location.href='AdminDashboard.html'">
-                        <i class="fas fa-dashboard"></i>
-                        <span>Dashboard</span>
-                    </button>
-                    <button class="menu-item" id="darkModeToggle">
-                        <i class="fas fa-moon"></i>
-                        <span>Dark Mode</span>
-                    </button>
-                    <button class="logout-btn" onclick="logout()">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span>Logout</span>
-                    </button>
-                </div>
+        </div>
+        <div class="header-yellow"></div>
+        <div class="header-blue">
+            <div class="header-right">
+                <p class="admin-label">EVENT SCHEDULING</p>
+                <h2 class="admin-title">ADMIN INTERFACE</h2>
             </div>
         </div>
     </header>
 
     <div class="container">
+        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="admin-profile">
                 <img src="../Assets/admin-icon.png" alt="Admin" class="admin-icon-img">
@@ -73,102 +61,39 @@
             </a>
         </aside>
 
-    <div class="profile-container">
-        <!-- Profile Info Card -->
-        <div class="profile-card">
-            <div class="profile-avatar">
-                <i class="fas fa-user-circle"></i>
+        <!-- Main Content -->
+        <main class="main-content">
+           <div class="content-header">
+                <h2>MANAGE PROFILE</h2>
+                <div class="header-line"></div>
             </div>
-            <h2 id="displayName">Jonath</h2>
-            <p class="profile-email">Administrator</p>
-        </div>
 
-        <!-- Change Name -->
-        <div class="settings-card">
-            <h3><i class="fas fa-id-card"></i> Change Name</h3>
-            <form id="nameForm">
-                <label>Current Name</label>
-                <input type="text" id="currentName" value="Administrator" disabled>
-                
-                <label>New Name</label>
-                <input type="text" id="newName" placeholder="Enter new name" required>
-                
-                <button type="submit">
-                    <i class="fas fa-save"></i>
-                    <span>Update Name</span>
-                </button>
-            </form>
-        </div>
-
-        <!-- Change Username -->
-        <div class="settings-card">
-            <h3><i class="fas fa-user-edit"></i> Change Username</h3>
-            <form id="usernameForm">
-                <label>Current Username</label>
-                <input type="text" id="currentUsername" value="admin" disabled>
-                
-                <label>New Username</label>
-                <input type="text" id="newUsername" placeholder="Enter new username" required>
-                
-                <button type="submit">
-                    <i class="fas fa-save"></i>
-                    <span>Update Username</span>
-                </button>
-            </form>
-        </div>
-
-        <!-- Change Password -->
-        <div class="settings-card">
-            <h3><i class="fas fa-lock"></i> Change Password</h3>
-            <form id="passwordForm">
-                <label>Current Password</label>
-                <div class="password-wrapper">
-                    <input type="password" id="currentPassword" placeholder="Enter current password" required>
-                    <i class="fas fa-eye toggle-password"></i>
+            <div class="profile-card">
+                <div class="profile-header">
+                    <h3>ADMIN INFORMATION</h3>
+                    <img src="../Assets/profile-edit.png" alt="Edit" class="edit-icon">
                 </div>
-                
-                <label>New Password</label>
-                <div class="password-wrapper">
-                    <input type="password" id="newPassword" placeholder="Enter new password" required>
-                    <i class="fas fa-eye toggle-password"></i>
-                </div>
-                
-                <label>Confirm New Password</label>
-                <div class="password-wrapper">
-                    <input type="password" id="confirmPassword" placeholder="Confirm new password" required>
-                    <i class="fas fa-eye toggle-password"></i>
-                </div>
-                
-                <button type="submit">
-                    <i class="fas fa-save"></i>
-                    <span>Update Password</span>
-                </button>
-            </form>
-        </div>
+                <form class="profile-form">
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" class="form-control" placeholder="">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" class="form-control" placeholder="">
+                    </div>
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" class="form-control" placeholder="">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" class="form-control" placeholder="">
+                    </div>
+                    <button type="submit" class="btn-edit">EDIT</button>
+                </form>
+            </div>
+        </main>
     </div>
-
-    <!-- Footer -->
-    <footer class="admin-footer">
-        <div class="footer-content">
-            <div class="footer-left">
-                <div class="footer-logo">
-                    <i class="fas fa-shield-halved"></i>
-                </div>
-                <div>
-                    <p class="footer-title">Hope Channel</p>
-                    <p class="footer-subtitle">Admin Management System</p>
-                </div>
-            </div>
-            <div class="footer-right">
-                <a href="../index.html" class="home-btn">
-                    <i class="fas fa-home"></i>
-                    <span>Back to Home</span>
-                </a>
-            </div>
-        </div>
-    </footer>
-
-<script type="module" src="../script/AdminProfile.js"></script>
-
 </body>
 </html>
