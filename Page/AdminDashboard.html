@@ -126,7 +126,64 @@
                     <button type="submit" class="btn-submit">ADD TO SCHEDULE</button>
                 </form>
             </div>
+
+            <!-- Current Schedule Section -->
+            <div class="schedule-section">
+                <div class="schedule-header">
+                    <h3>CURRENT SCHEDULE</h3>
+                    <p class="schedule-date" id="scheduleDate"></p>
+                </div>
+                <div class="schedule-list" id="scheduleList">
+                    <p class="no-schedule">No events scheduled for this day</p>
+                </div>
+            </div>
         </main>
+    </div>
+
+    <!-- Edit Event Modal -->
+    <div id="editModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>EDIT EVENT</h2>
+                <button class="modal-close" onclick="closeEditModal()">&times;</button>
+            </div>
+            <form id="editEventForm" class="modal-form">
+                <div class="form-group">
+                    <label for="editTime">TIME SLOT</label>
+                    <div class="edit-time-slot-container">
+                        <select id="editTime" class="form-control edit-time-select" required>
+                            <option value="">Choose time slot</option>
+                        </select>
+                        <input type="text" id="editCustomTimeInput" class="form-control edit-custom-time-input" placeholder="Enter custom time (e.g., 9:00 - 10:00 AM)" style="display: none;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="editProgram">PROGRAM</label>
+                    <div class="edit-program-slot-container">
+                        <select id="editProgram" class="form-control edit-program-select" required>
+                            <option value="">Choose the program</option>
+                        </select>
+                        <input type="text" id="editCustomProgramInput" class="form-control edit-custom-program-input" placeholder="Enter custom program" style="display: none;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="editDescription">DESCRIPTION</label>
+                    <input type="text" id="editDescription" class="form-control" placeholder="(Optional)">
+                </div>
+                <div class="form-group">
+                    <label for="editStatus">STATUS</label>
+                    <select id="editStatus" class="form-control" required>
+                        <option value="On-going">On-going</option>
+                        <option value="Done">Done</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn-save">SAVE CHANGES</button>
+                    <button type="button" class="btn-cancel" onclick="closeEditModal()">CANCEL</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script type="module" src="../Script/AdminDashboard.js"></script>
