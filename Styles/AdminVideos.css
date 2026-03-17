@@ -399,3 +399,122 @@ body {
     text-align: center;
     line-height: 1.4;
 }
+
+.btn-delete {
+    background: #e00;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.btn-delete:hover {
+    background: #c00;
+}
+
+/* Duration Dropdown */
+.duration-dropdown-wrapper {
+    position: relative;
+    flex: 1;
+}
+
+.duration-dropdown-btn {
+    width: 100%;
+    padding: 15px 15px;
+    border: none;
+    border-radius: 6px;
+    background: white;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 18px;
+    color: #555;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.duration-dropdown-btn:hover {
+    background: #f5f5f5;
+}
+
+.duration-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    margin-top: 5px;
+    display: none;
+    flex-direction: column;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.duration-dropdown-wrapper.active .duration-dropdown-menu {
+    display: flex;
+}
+
+.duration-option {
+    padding: 12px 15px;
+    border: none;
+    background: none;
+    text-align: left;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 16px;
+    color: #555;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.duration-option:hover {
+    background: #f0f0f0;
+}
+
+.duration-divider {
+    height: 1px;
+    background: #eee;
+    margin: 8px 0;
+}
+
+.custom-duration-input-wrapper {
+    display: flex;
+    gap: 8px;
+    padding: 10px 12px;
+}
+
+.custom-duration-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    outline: none;
+}
+
+.custom-duration-input:focus {
+    border-color: #FFD503;
+}
+
+.custom-duration-apply {
+    padding: 8px 16px;
+    background: #FFD503;
+    color: #1B3B72;
+    border: none;
+    border-radius: 4px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.custom-duration-apply:hover {
+    background: #ffc700;
+}

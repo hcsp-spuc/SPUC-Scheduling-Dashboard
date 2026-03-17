@@ -247,6 +247,82 @@ setInterval(()=>{
 location.reload();
 },60000);
 
+// VIDEO DISPLAY ROTATION
+
+let currentVideoIndex = 0;
+let videoList = [];
+let videoTimer = null;
+
+function getVideoId(url) {
+    const regExp = /(?:youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*)./;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+}
+
+function parseDuration(durationStr) {
+    if (!durationStr) return 30000; // default 30 seconds
+    
+    const match = durationStr.match(/(\d+)([smh])/i);
+    if (!match) return 30000;
+    
+    const value = parseInt(match[1]);
+    const unit = match[2].toLowerCase();
+    
+    switch(unit) {
+        case 's': return value * 1000;
+        case 'm': return value * 60 * 1000;
+        case 'h': return value * 60 * 60 * 1000;
+        default: return 30000;
+    }
+}
+
+function playVideo(index) {
+    if (videoList.length === 0) return;
+    
+    currentVideoIndex = index % videoList.length;
+    const video = videoList[currentVideoIndex];
+    const videoId = getVideoId(video.url);
+    
+    if (videoId) {
+        const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoId}`;
+        
+        const iframe = document.createElement('iframe');
+        iframe.src = embedUrl;
+        iframe.width = '100%';
+        iframe.height = '100%';
+        iframe.frameBorder = '0';
+        iframe.allow = 'autoplay; encrypted-media';
+        iframe.allowFullscreen = true;
+        
+        document.getElementById('video-box').innerHTML = '';
+        document.getElementById('video-box').appendChild(iframe);
+        
+        clearTimeout(videoTimer);
+        const duration = parseDuration(video.duration);
+        videoTimer = setTimeout(() => {
+            playVideo(currentVideoIndex + 1);
+        }, duration);
+    }
+}
+
+async function loadVideosForDisplay() {
+    const snapshot = await getDocs(collection(db, "videos"));
+    videoList = [];
+    
+    snapshot.forEach(doc => {
+        videoList.push(doc.data());
+    });
+    
+    if (videoList.length > 0) {
+        playVideo(0);
+    }
+}
+
+loadVideosForDisplay();
+
+// Reload videos every 5 minutes to check for updates
+setInterval(loadVideosForDisplay, 5 * 60 * 1000);
+
 </script>
 
 </body>
