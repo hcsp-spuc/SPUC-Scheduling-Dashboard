@@ -64,7 +64,6 @@
 <div class="video-box">
 <iframe 
 id="youtubeVideo"
-src="https://www.youtube.com/embed/KJe9A5TmV_k?autoplay=1&mute=1&loop=1&playlist=KJe9A5TmV_k"
 frameborder="0"
 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
 allowfullscreen>
@@ -294,8 +293,9 @@ function playVideo(index) {
         iframe.allow = 'autoplay; encrypted-media';
         iframe.allowFullscreen = true;
         
-        document.getElementById('video-box').innerHTML = '';
-        document.getElementById('video-box').appendChild(iframe);
+        const videoBox = document.getElementById('youtubeVideo').parentElement;
+        videoBox.innerHTML = '';
+        videoBox.appendChild(iframe);
         
         clearTimeout(videoTimer);
         const duration = parseDuration(video.duration);

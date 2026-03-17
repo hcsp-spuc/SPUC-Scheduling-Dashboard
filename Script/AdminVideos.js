@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDzSCJ8XellJRvOSBZ7cTCA2OcmFh8jSrs",
@@ -85,7 +85,21 @@ async function addVideo() {
     }
     
     try {
-        await addDoc(collection(db, "videos"), {
+        const snapshot = await getDocs(collection(db, "videos"));
+        let maxNumber = 0;
+        
+        snapshot.forEach(doc => {
+            const match = doc.id.match(/video(\d+)/);
+            if (match) {
+                const num = parseInt(match[1]);
+                if (num > maxNumber) maxNumber = num;
+            }
+        });
+        
+        const nextNumber = maxNumber + 1;
+        const docId = `video${nextNumber}`;
+        
+        await setDoc(doc(db, "videos", docId), {
             title,
             url,
             duration
