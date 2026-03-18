@@ -393,9 +393,9 @@ body {
 }
 
 .video-title {
-    font-size: 1.4vh;
+    font-size: 18px;
     font-weight: 500;
-    color: #333;
+    color: #1b3b72;
     text-align: center;
     line-height: 1.4;
 }
