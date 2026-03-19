@@ -321,7 +321,7 @@ body > * {
 
 .video-box {
     width: 100%;
-    min-height: clamp(180px, 28vh, 320px);
+    aspect-ratio: 16 / 9;
     background: #ffd503;
     border: clamp(2px, 0.2vw, 5px) solid #ffd503;
     overflow: hidden;
@@ -331,7 +331,6 @@ body > * {
 .video-box iframe {
     width: 100%;
     height: 100%;
-    min-height: clamp(180px, 28vh, 320px);
 }
 
 /* --- SWAP ANIMATION --- */
