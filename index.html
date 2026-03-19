@@ -236,6 +236,7 @@ setInterval(()=>{ loadTodayEvents(); }, 60000);
 let currentVideoIndex = 0;
 let videoList = [];
 let videoTimer = null;
+let isSwapped = false;
 
 function getVideoId(url) {
     const regExp = /(?:youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*)./;
@@ -267,7 +268,7 @@ function playVideo(index) {
     const videoId = getVideoId(video.url);
     
     if (videoId) {
-        const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0`;
+        const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=${isSwapped ? 0 : 1}&controls=0`;
         const videoBox = document.querySelector('.video-box');
         videoBox.innerHTML = '';
         
@@ -309,9 +310,14 @@ function swapContainers() {
     const previewArea = document.querySelector('.preview-area');
     const videoBox = document.querySelector('.video-box');
 
+    isSwapped = true;
+
     // video-box takes list-container's large spot in content-layout
     contentLayout.insertBefore(videoBox, listContainer);
     videoBox.classList.add('swapped');
+
+    // re-load current video unmuted
+    if (videoList.length > 0) playVideo(currentVideoIndex);
 
     // list-container moves into preview-area below image-box, replacing video-box's spot
     previewArea.appendChild(listContainer);
@@ -325,8 +331,12 @@ function swapContainers() {
             contentLayout.insertBefore(listContainer, previewArea);
             listContainer.classList.remove('swapped', 'swap-out');
 
+            isSwapped = false;
             previewArea.appendChild(videoBox);
             videoBox.classList.remove('swapped', 'swap-out');
+
+            // re-load current video muted
+            if (videoList.length > 0) playVideo(currentVideoIndex);
         }, 400);
     }, 60 * 60 * 1000 - 400);
 }
