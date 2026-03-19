@@ -318,23 +318,23 @@ function swapContainers() {
     listContainer.classList.add('swapped');
 
     setTimeout(() => {
-        // fade out before restoring
         videoBox.classList.add('swap-out');
         listContainer.classList.add('swap-out');
 
         setTimeout(() => {
-            // restore: list-container back to content-layout (before preview-area)
             contentLayout.insertBefore(listContainer, previewArea);
             listContainer.classList.remove('swapped', 'swap-out');
 
-            // restore: video-box back into preview-area
             previewArea.appendChild(videoBox);
             videoBox.classList.remove('swapped', 'swap-out');
         }, 400);
-    }, 30 * 1000 - 400);
+    }, 60 * 60 * 1000 - 400);
 }
 
-setInterval(swapContainers, 30 * 1000);
+setTimeout(function scheduleSwap() {
+    swapContainers();
+    setTimeout(scheduleSwap, 30 * 1000 + 60 * 60 * 1000);
+}, 30 * 1000);
 
 </script>
 

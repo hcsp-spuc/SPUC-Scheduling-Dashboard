@@ -353,15 +353,18 @@ body > * {
 
 /* video-box expands to fill the large list-container slot */
 .video-box.swapped {
-    flex: 1;
-    width: 100%;
+    flex: none;
+    width: 60vw;
+    max-width: 60vw;
     min-height: unset;
-    align-self: stretch;
+    aspect-ratio: 16 / 9;
+    align-self: flex-start;
     animation: swapIn 0.5s ease;
 }
 
 .video-box.swapped iframe {
     min-height: unset;
+    width: 100%;
     height: 100%;
 }
 
