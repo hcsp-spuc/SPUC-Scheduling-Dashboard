@@ -2,13 +2,13 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getFirestore, collection, getDocs, addDoc, query, where, setDoc, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyDzSCJ8XellJRvOSBZ7cTCA2OcmFh8jSrs",
-    authDomain: "spuc-events-web.firebaseapp.com",
-    projectId: "spuc-events-web",
-    storageBucket: "spuc-events-web.firebasestorage.app",
-    messagingSenderId: "989356465487",
-    appId: "1:989356465487:web:428b119629a939e725793a",
-    measurementId: "G-QE1HPE63EH"
+    apiKey: "AIzaSyB32ggdpwiNyZ0BKXeqwhVG7_Ei2qLF-Pw",
+    authDomain: "hcsp-scheduling-system.firebaseapp.com",
+    projectId: "hcsp-scheduling-system",
+    storageBucket: "hcsp-scheduling-system.firebasestorage.app",
+    messagingSenderId: "498610158944",
+    appId: "1:498610158944:web:d4c6778a849016e12c7205",
+    measurementId: "G-GFNQXDK1LE"
 };
 
 const app = initializeApp(firebaseConfig);

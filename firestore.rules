@@ -1,0 +1,30 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Allow read access to admin collection for login
+    match /admin/{document=**} {
+      allow read: if true;
+      allow write: if false; // Only allow writes through Firebase Console
+    }
+    
+    // Allow read access to programs collection
+    match /programs/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null; // Only authenticated users can write
+    }
+    
+    // Allow read/write access to events collection
+    match /events/{document=**} {
+      allow read: if true;
+      allow write: if true; // Adjust based on your security needs
+    }
+    
+    // Allow read/write access to videos collection
+    match /videos/{document=**} {
+      allow read: if true;
+      allow write: if true;
+    }
+  }
+}
