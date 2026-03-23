@@ -51,7 +51,8 @@ form.addEventListener("submit", async function(e){
 
         querySnapshot.forEach((docSnap) => {
             const data = docSnap.data();
-            if(username === data.username && password === data.password){
+            console.log("DB doc:", JSON.stringify(data));
+            if(username.trim() === (data.username || "").trim() && password.trim() === (data.password || "").trim()){
                 authenticated = true;
                 adminData = { id: docSnap.id, ...data };
             }
