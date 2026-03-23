@@ -211,27 +211,15 @@ function setupTimeSlotListeners() {
             customTimeInput.style.display = 'block';
             customTimeInput.value = '';
             customTimeInput.focus();
-        } else if (e.target.value !== '') {
-            customTimeInput.style.display = 'none';
-            timeSlotSelect.style.display = 'block';
         }
     });
     
-    customTimeInput.addEventListener('blur', () => {
-        if (customTimeInput.value.trim() !== '') {
-            timeSlotSelect.value = customTimeInput.value;
+    customTimeInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            customTimeInput.value = '';
             customTimeInput.style.display = 'none';
             timeSlotSelect.style.display = 'block';
-        } else {
             timeSlotSelect.value = '';
-            customTimeInput.style.display = 'none';
-            timeSlotSelect.style.display = 'block';
-        }
-    });
-    
-    customTimeInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            customTimeInput.blur();
         }
     });
 }
@@ -259,6 +247,26 @@ async function loadTimeSlots() {
         pmGroup.appendChild(option);
     });
     timeSlotSelect.appendChild(pmGroup);
+
+    try {
+        const snapshot = await getDocs(collection(db, "timeslots"));
+        if (!snapshot.empty) {
+            const customGroup = document.createElement('optgroup');
+            customGroup.label = 'CUSTOM TIME SLOTS';
+            snapshot.forEach(doc => {
+                const slot = doc.data().slot;
+                if (slot && !amSlots.includes(slot) && !pmSlots.includes(slot)) {
+                    const option = document.createElement('option');
+                    option.value = slot;
+                    option.textContent = slot;
+                    customGroup.appendChild(option);
+                }
+            });
+            if (customGroup.children.length > 0) timeSlotSelect.appendChild(customGroup);
+        }
+    } catch (error) {
+        console.error("Error loading custom time slots:", error);
+    }
     
     const customOption = document.createElement('option');
     customOption.value = 'custom';
@@ -278,27 +286,15 @@ function setupProgramListeners() {
             customProgramInput.style.display = 'block';
             customProgramInput.value = '';
             customProgramInput.focus();
-        } else if (e.target.value !== '') {
-            customProgramInput.style.display = 'none';
-            programSelect.style.display = 'block';
         }
     });
     
-    customProgramInput.addEventListener('blur', () => {
-        if (customProgramInput.value.trim() !== '') {
-            programSelect.value = customProgramInput.value;
+    customProgramInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            customProgramInput.value = '';
             customProgramInput.style.display = 'none';
             programSelect.style.display = 'block';
-        } else {
             programSelect.value = '';
-            customProgramInput.style.display = 'none';
-            programSelect.style.display = 'block';
-        }
-    });
-    
-    customProgramInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            customProgramInput.blur();
         }
     });
 }
@@ -337,27 +333,15 @@ function setupEditTimeSlotListeners() {
             editCustomTimeInput.style.display = 'block';
             editCustomTimeInput.value = '';
             editCustomTimeInput.focus();
-        } else if (e.target.value !== '') {
-            editCustomTimeInput.style.display = 'none';
-            editTimeSelect.style.display = 'block';
         }
     });
     
-    editCustomTimeInput.addEventListener('blur', () => {
-        if (editCustomTimeInput.value.trim() !== '') {
-            editTimeSelect.value = editCustomTimeInput.value;
+    editCustomTimeInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            editCustomTimeInput.value = '';
             editCustomTimeInput.style.display = 'none';
             editTimeSelect.style.display = 'block';
-        } else {
             editTimeSelect.value = '';
-            editCustomTimeInput.style.display = 'none';
-            editTimeSelect.style.display = 'block';
-        }
-    });
-    
-    editCustomTimeInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            editCustomTimeInput.blur();
         }
     });
 }
@@ -372,27 +356,15 @@ function setupEditProgramListeners() {
             editCustomProgramInput.style.display = 'block';
             editCustomProgramInput.value = '';
             editCustomProgramInput.focus();
-        } else if (e.target.value !== '') {
-            editCustomProgramInput.style.display = 'none';
-            editProgramSelect.style.display = 'block';
         }
     });
     
-    editCustomProgramInput.addEventListener('blur', () => {
-        if (editCustomProgramInput.value.trim() !== '') {
-            editProgramSelect.value = editCustomProgramInput.value;
+    editCustomProgramInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            editCustomProgramInput.value = '';
             editCustomProgramInput.style.display = 'none';
             editProgramSelect.style.display = 'block';
-        } else {
             editProgramSelect.value = '';
-            editCustomProgramInput.style.display = 'none';
-            editProgramSelect.style.display = 'block';
-        }
-    });
-    
-    editCustomProgramInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            editCustomProgramInput.blur();
         }
     });
 }
@@ -660,6 +632,20 @@ document.getElementById('eventForm').addEventListener('submit', async (e) => {
             status: 'Upcoming',
             createdAt: new Date()
         });
+
+        // Save custom time slot to Firestore if it was a custom entry
+        if (timeSlotSelect.style.display === 'none' && timeSlot) {
+            const existingSlots = await getDocs(collection(db, "timeslots"));
+            const alreadyExists = [...existingSlots.docs].some(d => d.data().slot === timeSlot);
+            if (!alreadyExists) await addDoc(collection(db, "timeslots"), { slot: timeSlot });
+        }
+
+        // Save custom program to Firestore if it was a custom entry
+        if (programSelect.style.display === 'none' && program) {
+            const existingPrograms = await getDocs(collection(db, "programs"));
+            const alreadyExists = [...existingPrograms.docs].some(d => d.data().name === program);
+            if (!alreadyExists) await addDoc(collection(db, "programs"), { name: program });
+        }
         
         alert('Event added successfully!');
         document.getElementById('eventForm').reset();
@@ -667,6 +653,8 @@ document.getElementById('eventForm').addEventListener('submit', async (e) => {
         customTimeInput.style.display = 'none';
         programSelect.style.display = 'block';
         customProgramInput.style.display = 'none';
+        loadTimeSlots();
+        loadPrograms();
         loadScheduleForDay();
     } catch (error) {
         console.error("Error adding event:", error);

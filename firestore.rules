@@ -9,10 +9,16 @@ service cloud.firestore {
       allow write: if false; // Only allow writes through Firebase Console
     }
     
-    // Allow read access to programs collection
+    // Allow read/write access to programs collection
     match /programs/{document=**} {
       allow read: if true;
-      allow write: if request.auth != null; // Only authenticated users can write
+      allow write: if true;
+    }
+
+    // Allow read/write access to timeslots collection
+    match /timeslots/{document=**} {
+      allow read: if true;
+      allow write: if true;
     }
     
     // Allow read/write access to events collection
