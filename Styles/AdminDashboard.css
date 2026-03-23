@@ -278,6 +278,14 @@ body {
     animation: slideInLeft 0.6s ease-out;
     min-width: 100px;
     text-align: center;
+    cursor: pointer;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.month-label:hover {
+    color: #13408d;
+    transform: scale(1.1);
+    font-weight: bold;
 }
 
 .nav-btn {
@@ -492,6 +500,18 @@ option[value="custom"] {
     background: white;
     color: #333;
     font-family: 'Montserrat', sans-serif;
+}
+
+.field-error {
+    color: #ff6b6b;
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: 6px;
+    display: none;
+}
+
+.input-error {
+    border: 2px solid #ff6b6b !important;
 }
 
 .program-slot-container {

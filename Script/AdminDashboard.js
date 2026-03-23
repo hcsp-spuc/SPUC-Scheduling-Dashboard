@@ -86,11 +86,13 @@ function updateMonthDisplay() {
     const span1 = document.createElement('span');
     span1.className = 'month-label';
     span1.textContent = months[0].name;
+    span1.addEventListener('click', () => navigateToMonth(months[0]));
     monthNav.appendChild(span1);
 
     const span2 = document.createElement('span');
     span2.className = 'month-label';
     span2.textContent = months[1].name;
+    span2.addEventListener('click', () => navigateToMonth(months[1]));
     monthNav.appendChild(span2);
 
     const prevBtn = document.createElement('button');
@@ -101,6 +103,7 @@ function updateMonthDisplay() {
         currentDate.setMonth(currentDate.getMonth() - 1);
         generateCalendar(currentDate);
         updateMonthDisplay();
+        resetFormInputs();
     });
     monthNav.appendChild(prevBtn);
 
@@ -118,18 +121,41 @@ function updateMonthDisplay() {
         currentDate.setMonth(currentDate.getMonth() + 1);
         generateCalendar(currentDate);
         updateMonthDisplay();
+        resetFormInputs();
     });
     monthNav.appendChild(nextBtn);
 
     const span4 = document.createElement('span');
     span4.className = 'month-label';
     span4.textContent = months[3].name;
+    span4.addEventListener('click', () => navigateToMonth(months[3]));
     monthNav.appendChild(span4);
 
     const span5 = document.createElement('span');
     span5.className = 'month-label';
     span5.textContent = months[4].name;
+    span5.addEventListener('click', () => navigateToMonth(months[4]));
     monthNav.appendChild(span5);
+}
+
+function showFieldError(input, errorId) {
+    input.classList.add('input-error');
+    const err = document.getElementById(errorId);
+    if (err) err.style.display = 'block';
+}
+
+function clearFieldError(input, errorId) {
+    input.classList.remove('input-error');
+    const err = document.getElementById(errorId);
+    if (err) err.style.display = 'none';
+}
+
+function navigateToMonth({ name, year }) {
+    const monthIndex = monthNames.indexOf(name);
+    currentDate = new Date(year, monthIndex, 1);
+    generateCalendar(currentDate);
+    updateMonthDisplay();
+    resetFormInputs();
 }
 
 function generateCalendar(date) {
@@ -177,10 +203,30 @@ function generateCalendar(date) {
     }
 }
 
+function resetFormInputs() {
+    const timeSlotSelect = document.getElementById('timeSlot');
+    const customTimeInput = document.getElementById('customTimeInput');
+    const programSelect = document.getElementById('program');
+    const customProgramInput = document.getElementById('customProgramInput');
+
+    customTimeInput.value = '';
+    customTimeInput.style.display = 'none';
+    timeSlotSelect.style.display = 'block';
+    timeSlotSelect.value = '';
+    clearFieldError(customTimeInput, 'timeError');
+
+    customProgramInput.value = '';
+    customProgramInput.style.display = 'none';
+    programSelect.style.display = 'block';
+    programSelect.value = '';
+    clearFieldError(customProgramInput, 'programError');
+}
+
 function selectDate(date) {
     selectedDate = new Date(date);
     generateCalendar(currentDate);
     updateFormDate();
+    resetFormInputs();
     loadTimeSlots();
     loadScheduleForDay();
 }
@@ -214,12 +260,15 @@ function setupTimeSlotListeners() {
         }
     });
     
+    customTimeInput.addEventListener('input', () => clearFieldError(customTimeInput, 'timeError'));
+
     customTimeInput.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             customTimeInput.value = '';
             customTimeInput.style.display = 'none';
             timeSlotSelect.style.display = 'block';
             timeSlotSelect.value = '';
+            clearFieldError(customTimeInput, 'timeError');
         }
     });
 }
@@ -289,12 +338,15 @@ function setupProgramListeners() {
         }
     });
     
+    customProgramInput.addEventListener('input', () => clearFieldError(customProgramInput, 'programError'));
+
     customProgramInput.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             customProgramInput.value = '';
             customProgramInput.style.display = 'none';
             programSelect.style.display = 'block';
             programSelect.value = '';
+            clearFieldError(customProgramInput, 'programError');
         }
     });
 }
@@ -606,16 +658,25 @@ document.getElementById('eventForm').addEventListener('submit', async (e) => {
     
     const timeSlotSelect = document.getElementById('timeSlot');
     const customTimeInput = document.getElementById('customTimeInput');
-    const timeSlot = timeSlotSelect.style.display === 'none' ? customTimeInput.value : timeSlotSelect.value;
+    const timeSlot = timeSlotSelect.style.display === 'none' ? customTimeInput.value.trim() : timeSlotSelect.value;
     
     const programSelect = document.getElementById('program');
     const customProgramInput = document.getElementById('customProgramInput');
-    const program = programSelect.style.display === 'none' ? customProgramInput.value : programSelect.value;
+    const program = programSelect.style.display === 'none' ? customProgramInput.value.trim() : programSelect.value;
     
     const description = document.getElementById('description').value;
-    
+
+    let hasError = false;
+    if (timeSlotSelect.style.display === 'none' && !timeSlot) {
+        showFieldError(customTimeInput, 'timeError');
+        hasError = true;
+    }
+    if (programSelect.style.display === 'none' && !program) {
+        showFieldError(customProgramInput, 'programError');
+        hasError = true;
+    }
     if (!timeSlot || !program) {
-        alert('Please select both time slot and program');
+        if (!hasError) alert('Please select both time slot and program');
         return;
     }
     
@@ -643,13 +704,6 @@ document.getElementById('eventForm').addEventListener('submit', async (e) => {
             if (!alreadyExists) await addDoc(collection(db, "timeslots"), { slot: timeSlot });
         }
 
-        // Save custom program to Firestore if it was a custom entry
-        if (programSelect.style.display === 'none' && program) {
-            const existingPrograms = await getDocs(collection(db, "programs"));
-            const alreadyExists = [...existingPrograms.docs].some(d => d.data().name === program);
-            if (!alreadyExists) await addDoc(collection(db, "programs"), { name: program });
-        }
-        
         alert('Event added successfully!');
         document.getElementById('eventForm').reset();
         timeSlotSelect.style.display = 'block';
