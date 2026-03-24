@@ -25,9 +25,9 @@ body {
 .header-white {
     background: #ffffff;
     width: 63%;
-    margin-right: -20vh;
+    margin-right: clamp(-100px, -20vh, -10px);
     position: relative;
-    clip-path: polygon(0 0, calc(100% - 100px) 0, 100% 100%, 0 100%);
+    clip-path: polygon(0 0, calc(100% - clamp(40px, 5vw, 100px)) 0, 100% 100%, 0 100%);
     display: flex;
     align-items: center;
     padding: 0 30px;
@@ -36,12 +36,12 @@ body {
 
 .header-yellow {
     position: absolute;
-    left: calc(31% - 298px);
-    top: 25px;
+    left: calc(28% - 310px);
+    top: 21px;
     width: clamp(800px, 100vw, 1000px);
-    height: 100%;
-    background: url(/Assets/header-yellow.png) no-repeat center center;
-    background-size: 98% 100%;
+    height: 200%;
+    background: url(/Assets/header-yellow.png) no-repeat center top;
+    background-size: 98% auto;
     z-index: 2;
 }
 
@@ -70,7 +70,7 @@ body {
 
 .hc-logo {
     width: auto;
-    height: 265px;
+    height: clamp(80px, 18vh, 265px);
     object-fit: contain;
 }
 
@@ -93,11 +93,11 @@ body {
 }
 
 .subtitle-text {
-    font-size: 18px;
-    letter-spacing: 5px;
+    font-size: clamp(10px, 1.5vw, 18px);
+    letter-spacing: clamp(2px, 0.4vw, 5px);
     color: #1B3B72;
     font-weight: 500;
-    margin-left: 38vh;
+    margin-left: clamp(0px, 20vw, 38vh);
 }
 
 
@@ -107,8 +107,8 @@ body {
 }
 
 .admin-label {
-    margin-top: 105px;
-    font-size: 20px;
+    margin-top: clamp(20px, 8vh, 105px);
+    font-size: clamp(12px, 1.5vw, 20px);
     letter-spacing: 2px;
     font-weight: 100;
     opacity: 90%;
@@ -124,7 +124,7 @@ body {
 
 /* Container Layout */
 .container {
-    display: flex;
+    display: block;
     width: 100%;
     position: relative;
 }
@@ -358,6 +358,107 @@ body {
 
 .form-control::placeholder {
     color: #999;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .container {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        position: relative;
+        top: auto;
+        width: 100%;
+        height: auto;
+        border-radius: 0;
+        display: flex;
+        gap: 20px;
+        padding: 20px;
+    }
+
+    .admin-profile {
+        border-bottom: none;
+        border-right: 1px solid rgba(255, 255, 255, 0.2);
+        padding-right: 20px;
+        margin-bottom: 0;
+    }
+
+    .sidebar-menu {
+        flex-direction: row;
+        flex-wrap: wrap;
+        margin-bottom: 0;
+    }
+
+    .main-content {
+        margin-left: 0;
+        margin: 20px;
+        height: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .admin-header {
+        height: auto;
+        min-height: 80px;
+    }
+
+    .header-white {
+        width: 100%;
+        margin-right: 0;
+        clip-path: none;
+    }
+
+    .header-blue {
+        display: none;
+    }
+
+    .header-yellow {
+        display: none;
+    }
+
+    .header-content {
+        flex-direction: row;
+        gap: 10px;
+    }
+
+    .hc-logo {
+        height: clamp(50px, 10vw, 80px);
+    }
+
+    .welcome-text {
+        font-size: clamp(8px, 2vw, 14px);
+        letter-spacing: 3px;
+    }
+
+    .channel-name {
+        font-size: clamp(20px, 5vw, 36px);
+    }
+
+    .subtitle-text {
+        font-size: clamp(7px, 1.5vw, 12px);
+        margin-left: 0;
+        letter-spacing: 2px;
+    }
+
+    .sidebar {
+        top: auto;
+        position: relative;
+        width: 100%;
+        height: auto;
+        border-radius: 0;
+        flex-direction: row;
+        flex-wrap: wrap;
+        padding: 15px;
+        gap: 10px;
+    }
+
+    .main-content {
+        margin-left: 0;
+        margin: 0;
+        padding: 20px;
+        height: auto;
+    }
 }
 
 
