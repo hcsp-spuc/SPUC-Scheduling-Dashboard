@@ -1,5 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { showModal, showConfirm, initModal } from "/Script/modal.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB32ggdpwiNyZ0BKXeqwhVG7_Ei2qLF-Pw",
@@ -14,22 +15,24 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const menuToggle = document.getElementById("menuToggle");
-const dropdownMenu = document.getElementById("dropdownMenu");
-const darkModeToggle = document.getElementById("darkModeToggle");
+initModal();
 
-// Load current admin credentials from Firestore
+const adminId = localStorage.getItem("adminId");
+const editBtn = document.getElementById('editBtn');
+const saveBtn = document.getElementById('saveBtn');
+const profileForm = document.getElementById('profileForm');
+const inputs = profileForm.querySelectorAll('.form-control');
+
 async function loadAdminData() {
+    if (!adminId) return;
     try {
-        const docRef = doc(db, "admin", "adminCredentials");
-        const docSnap = await getDoc(docRef);
-        
+        const docSnap = await getDoc(doc(db, "admin", adminId));
         if (docSnap.exists()) {
             const data = docSnap.data();
-            document.getElementById('displayName').textContent = data.name || 'Administrator';
-            document.getElementById('currentName').value = data.name || 'Administrator';
-            document.getElementById('currentUsername').value = data.username || 'admin';
-            document.querySelector('.profile-email').textContent = data.username || 'admin';
+            document.getElementById('nameInput').value = data.name || '';
+            document.getElementById('emailInput').value = data.email || '';
+            document.getElementById('usernameInput').value = data.username || '';
+            document.getElementById('passwordInput').value = data.password || '';
         }
     } catch (error) {
         console.error('Error loading admin data:', error);
@@ -38,127 +41,39 @@ async function loadAdminData() {
 
 loadAdminData();
 
-// Dark mode toggle
-if (localStorage.getItem('darkMode') === 'enabled') {
-    document.body.classList.add('dark-mode');
-    darkModeToggle.innerHTML = '<i class="fas fa-sun"></i><span>Light Mode</span>';
-}
-
-darkModeToggle.addEventListener('click', function() {
-    document.body.classList.toggle('dark-mode');
-    if (document.body.classList.contains('dark-mode')) {
-        localStorage.setItem('darkMode', 'enabled');
-        this.innerHTML = '<i class="fas fa-sun"></i><span>Light Mode</span>';
-    } else {
-        localStorage.setItem('darkMode', 'disabled');
-        this.innerHTML = '<i class="fas fa-moon"></i><span>Dark Mode</span>';
-    }
+editBtn.addEventListener('click', () => {
+    inputs.forEach(input => input.removeAttribute('readonly'));
+    saveBtn.style.display = 'block';
+    editBtn.style.opacity = '0.4';
+    editBtn.style.pointerEvents = 'none';
 });
 
-// Dropdown menu toggle
-let isDropdownOpen = false;
-
-menuToggle.addEventListener('mouseenter', function() {
-    if (!isDropdownOpen) {
-        dropdownMenu.style.display = 'block';
-    }
-});
-
-menuToggle.addEventListener('click', function(e) {
-    e.stopPropagation();
-    isDropdownOpen = !isDropdownOpen;
-    dropdownMenu.style.display = isDropdownOpen ? 'block' : 'none';
-});
-
-document.querySelector('.user-menu').addEventListener('mouseleave', function() {
-    if (!isDropdownOpen) {
-        dropdownMenu.style.display = 'none';
-    }
-});
-
-document.addEventListener('click', function() {
-    if (isDropdownOpen) {
-        isDropdownOpen = false;
-        dropdownMenu.style.display = 'none';
-    }
-});
-
-// Toggle password visibility
-document.querySelectorAll('.toggle-password').forEach(icon => {
-    icon.addEventListener('click', function() {
-        const input = this.previousElementSibling;
-        const type = input.type === 'password' ? 'text' : 'password';
-        input.type = type;
-        this.classList.toggle('fa-eye');
-        this.classList.toggle('fa-eye-slash');
-    });
-});
-
-window.logout = function() {
-    if (confirm("Are you sure you want to logout?")) {
-        localStorage.removeItem("isAdminLoggedIn");
-        window.location.href = "LoginAdmin.html";
-    }
-}
-
-// Change Name
-document.getElementById('nameForm').addEventListener('submit', async function(e) {
+profileForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const newName = document.getElementById('newName').value;
-    
-    try {
-        const docRef = doc(db, "admin", "adminCredentials");
-        await updateDoc(docRef, { name: newName });
-        alert('Name updated successfully!');
-        document.getElementById('currentName').value = newName;
-        document.getElementById('displayName').textContent = newName;
-        this.reset();
-    } catch (error) {
-        alert('Error updating name: ' + error.message);
-    }
-});
+    if (!adminId) return;
 
-// Change Username
-document.getElementById('usernameForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const newUsername = document.getElementById('newUsername').value;
-    
-    try {
-        const docRef = doc(db, "admin", "adminCredentials");
-        await updateDoc(docRef, { username: newUsername });
-        alert('Username updated successfully!');
-        document.getElementById('currentUsername').value = newUsername;
-        document.querySelector('.profile-email').textContent = newUsername;
-        this.reset();
-    } catch (error) {
-        alert('Error updating username: ' + error.message);
-    }
-});
+    const name = document.getElementById('nameInput').value.trim();
+    const username = document.getElementById('usernameInput').value.trim();
+    const password = document.getElementById('passwordInput').value.trim();
 
-// Change Password
-document.getElementById('passwordForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const currentPassword = document.getElementById('currentPassword').value;
-    const newPassword = document.getElementById('newPassword').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
-    
-    if (newPassword !== confirmPassword) {
-        alert('Passwords do not match!');
+    if (!name || !username || !password) {
+        showModal('Name, Username, and Password cannot be empty.', 'error');
         return;
     }
-    
+
     try {
-        const docRef = doc(db, "admin", "adminCredentials");
-        const docSnap = await getDoc(docRef);
-        
-        if (docSnap.exists() && docSnap.data().password === currentPassword) {
-            await updateDoc(docRef, { password: newPassword });
-            alert('Password updated successfully!');
-            this.reset();
-        } else {
-            alert('Current password is incorrect!');
-        }
+        await updateDoc(doc(db, "admin", adminId), {
+            name: name,
+            email: document.getElementById('emailInput').value,
+            username: username,
+            password: password
+        });
+        showModal('Profile updated successfully!');
+        inputs.forEach(input => input.setAttribute('readonly', true));
+        saveBtn.style.display = 'none';
+        editBtn.style.opacity = '1';
+        editBtn.style.pointerEvents = 'auto';
     } catch (error) {
-        alert('Error updating password: ' + error.message);
+        showModal('Error updating profile: ' + error.message, 'error');
     }
 });

@@ -59,7 +59,8 @@
 
 <!-- IMAGE CAROUSEL -->
 <div class="image-box">
-<img id="carouselImage" src="" alt="Carousel">
+<img id="carouselImageA" src="" alt="Carousel">
+<img id="carouselImageB" src="" alt="Carousel">
 </div>
 
 <!-- VIDEO -->
@@ -311,16 +312,22 @@ setInterval(loadVideosForDisplay, 5 * 60 * 1000);
 let imageList = [];
 let currentImageIndex = 0;
 let imageTimer = null;
+let activeSlot = 'A';
 
 function showImage(index) {
     if (imageList.length === 0) return;
     currentImageIndex = index % imageList.length;
-    const img = document.getElementById('carouselImage');
-    img.style.opacity = '0';
-    setTimeout(() => {
-        img.src = imageList[currentImageIndex].url;
-        img.style.opacity = '1';
-    }, 500);
+
+    const imgA = document.getElementById('carouselImageA');
+    const imgB = document.getElementById('carouselImageB');
+    const incoming = activeSlot === 'A' ? imgA : imgB;
+    const outgoing = activeSlot === 'A' ? imgB : imgA;
+
+    incoming.src = imageList[currentImageIndex].url;
+    incoming.className = 'slide-in';
+    outgoing.className = 'slide-out';
+
+    activeSlot = activeSlot === 'A' ? 'B' : 'A';
     imageTimer = setTimeout(() => showImage(currentImageIndex + 1), 5000);
 }
 

@@ -294,10 +294,32 @@ body {
     letter-spacing: 2px;
 }
 
-.edit-icon {
-    width: auto;
-    height: 65px;
-    object-fit: contain;
+.form-actions {
+    display: flex;
+    justify-content: flex-start;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.btn-edit,
+.btn-save {
+    background: #FFD503;
+    color: #1B3B72;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 6px;
+    font-size: 20px;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-edit:hover,
+.btn-save:hover {
+    background: #FFC500;
+    transform: translateY(-2px);
 }
 
 .profile-form {
@@ -323,32 +345,19 @@ body {
     padding: 16px 15px;
     border: none;
     border-radius: 6px;
-    font-size: 14px;
+    font-size: 20px;
     font-family: 'Montserrat', sans-serif;
     background: white;
-    color: #333;
+    color: #1b3b72;
+}
+
+.form-control[readonly] {
+    background: #e8e8e8;
+    cursor: not-allowed;
 }
 
 .form-control::placeholder {
     color: #999;
 }
 
-.btn-edit {
-    background: #FFD503;
-    color: #1B3B72;
-    border: none;
-    padding: 12px 30px;
-    border-radius: 6px;
-    font-size: 20px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    cursor: pointer;
-    width: fit-content;
-    margin-top: 10px;
-    transition: all 0.3s ease;
-}
 
-.btn-edit:hover {
-    background: #FFC500;
-    transform: translateY(-2px);
-}

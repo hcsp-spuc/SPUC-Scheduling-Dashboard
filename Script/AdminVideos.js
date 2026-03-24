@@ -1,5 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { showModal, showConfirm, initModal } from "/Script/modal.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyB32ggdpwiNyZ0BKXeqwhVG7_Ei2qLF-Pw",
@@ -70,17 +71,17 @@ async function addVideo() {
     const duration = selectedDurationInput.value.trim();
     
     if (!title || !url) {
-        alert("Please fill in title and URL");
+        showModal("Please fill in title and URL", 'error');
         return;
     }
     
     if (!duration) {
-        alert("Please select a duration");
+        showModal("Please select a duration", 'error');
         return;
     }
     
     if (!extractYouTubeId(url)) {
-        alert("Invalid YouTube URL");
+        showModal("Invalid YouTube URL", 'error');
         return;
     }
     
@@ -113,20 +114,21 @@ async function addVideo() {
         loadVideos();
     } catch (error) {
         console.error("Error adding video:", error);
-        alert("Error adding video");
+        showModal("Error adding video", 'error');
     }
 }
 
 // Delete video
 async function deleteVideo(docId) {
-    if (confirm("Delete this video?")) {
+    showConfirm("Delete this video?", async () => {
         try {
             await deleteDoc(doc(db, "videos", docId));
             loadVideos();
         } catch (error) {
             console.error("Error deleting video:", error);
+            showModal("Error deleting video", 'error');
         }
-    }
+    });
 }
 
 // Validate duration format
@@ -136,6 +138,7 @@ function validateDurationFormat(str) {
 
 // Event listeners
 document.addEventListener("DOMContentLoaded", () => {
+    initModal();
     loadVideos();
     
     // Duration dropdown functionality
@@ -181,7 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 durationWrapper.classList.remove("active");
                 customDurationInput.value = "";
             } else {
-                alert("Invalid format. Use: 30s, 2m, 1h");
+                showModal("Invalid format. Use: 30s, 2m, 1h", 'error');
             }
         }
     });

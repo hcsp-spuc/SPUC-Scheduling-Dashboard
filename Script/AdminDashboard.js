@@ -1,5 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, getDocs, addDoc, query, where, setDoc, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { showModal, showConfirm, initModal } from "/Script/modal.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyB32ggdpwiNyZ0BKXeqwhVG7_Ei2qLF-Pw",
@@ -13,6 +14,8 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
+initModal();
 
 let currentDate = new Date();
 let selectedDate = new Date();
@@ -607,18 +610,17 @@ async function loadScheduleForDay() {
 }
 
 window.deleteEvent = async function(eventId) {
-    if (confirm('Are you sure you want to delete this event?')) {
+    showConfirm('Are you sure you want to delete this event?', async () => {
         try {
-            const eventRef = doc(db, "events", eventId);
-            await deleteDoc(eventRef);
-            alert('Event deleted successfully!');
+            await deleteDoc(doc(db, "events", eventId));
+            showModal('Event deleted successfully!');
             await loadEventCounts();
             loadScheduleForDay();
         } catch (error) {
             console.error("Error deleting event:", error);
-            alert('Error deleting event');
+            showModal('Error deleting event', 'error');
         }
-    }
+    });
 };
 
 window.editEvent = async function(eventId) {
@@ -671,7 +673,7 @@ document.getElementById('editEventForm').addEventListener('submit', async (e) =>
     e.preventDefault();
     
     if (!currentEditingEventId) {
-        alert('Error: No event selected for editing');
+        showModal('Error: No event selected for editing', 'error');
         return;
     }
     
@@ -687,7 +689,7 @@ document.getElementById('editEventForm').addEventListener('submit', async (e) =>
     const editStatus = document.getElementById('editStatus').value;
     
     if (!editTime || !editProgram) {
-        alert('Please fill in all required fields');
+        showModal('Please fill in all required fields', 'error');
         return;
     }
     
@@ -700,13 +702,13 @@ document.getElementById('editEventForm').addEventListener('submit', async (e) =>
             status: editStatus
         });
         
-        alert('Event updated successfully!');
+        showModal('Event updated successfully!');
         closeEditModal();
         await loadEventCounts();
         loadScheduleForDay();
     } catch (error) {
         console.error("Error updating event:", error);
-        alert('Error updating event: ' + error.message);
+        showModal('Error updating event: ' + error.message, 'error');
     }
 });
 
@@ -733,7 +735,7 @@ document.getElementById('eventForm').addEventListener('submit', async (e) => {
         hasError = true;
     }
     if (!timeSlot || !program) {
-        if (!hasError) alert('Please select both time slot and program');
+        if (!hasError) showModal('Please select both time slot and program', 'error');
         return;
     }
     
@@ -761,7 +763,7 @@ document.getElementById('eventForm').addEventListener('submit', async (e) => {
             if (!alreadyExists) await addDoc(collection(db, "timeslots"), { slot: timeSlot });
         }
 
-        alert('Event added successfully!');
+        showModal('Event added successfully!');
         document.getElementById('eventForm').reset();
         timeSlotSelect.style.display = 'block';
         customTimeInput.style.display = 'none';
@@ -773,7 +775,7 @@ document.getElementById('eventForm').addEventListener('submit', async (e) => {
         loadScheduleForDay();
     } catch (error) {
         console.error("Error adding event:", error);
-        alert('Error adding event: ' + error.message);
+        showModal('Error adding event: ' + error.message, 'error');
     }
 });
 

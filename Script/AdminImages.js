@@ -1,5 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { showModal, showConfirm, initModal } from "/Script/modal.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyB32ggdpwiNyZ0BKXeqwhVG7_Ei2qLF-Pw",
@@ -12,6 +13,8 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
+initModal();
 
 const CLOUDINARY_CLOUD_NAME = "dssub5asx";
 const CLOUDINARY_UPLOAD_PRESET = "scheduling_images";
@@ -52,7 +55,7 @@ async function loadImages() {
 document.getElementById("btnAdd").addEventListener("click", async () => {
     const fileInput = document.getElementById("imageFileInput");
     const file = fileInput.files[0];
-    if (!file) return alert("Please select an image file.");
+    if (!file) return showModal("Please select an image file.", 'error');
 
     const btnAdd = document.getElementById("btnAdd");
     btnAdd.disabled = true;
@@ -64,7 +67,7 @@ document.getElementById("btnAdd").addEventListener("click", async () => {
         fileInput.value = "";
         await loadImages();
     } catch (err) {
-        alert("Upload failed: " + err.message);
+        showModal("Upload failed: " + err.message, 'error');
     } finally {
         btnAdd.disabled = false;
         btnAdd.textContent = "ADD IMAGE";
@@ -77,11 +80,11 @@ document.getElementById("btnCancel").addEventListener("click", () => {
 
 document.getElementById("imageGrid").addEventListener("click", async (e) => {
     if (!e.target.classList.contains("btn-delete")) return;
-    if (!confirm("Delete this image?")) return;
-
-    const docId = e.target.dataset.id;
-    await deleteDoc(doc(db, "images", docId));
-    await loadImages();
+    showConfirm("Delete this image?", async () => {
+        const docId = e.target.dataset.id;
+        await deleteDoc(doc(db, "images", docId));
+        await loadImages();
+    });
 });
 
 loadImages();

@@ -6,7 +6,7 @@ service cloud.firestore {
     // Allow read access to admin collection for login
     match /admin/{document=**} {
       allow read: if true;
-      allow write: if false; // Only allow writes through Firebase Console
+      allow write: if true;
     }
     
     // Allow read/write access to programs collection

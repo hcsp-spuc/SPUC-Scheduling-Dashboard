@@ -7,6 +7,7 @@
     <title>Admin | Videos Management</title>
     <link rel="icon" type="image/png" href="../Assets/HCLogo.png">
     <link rel="stylesheet" href="/Styles/AdminVideos.css">
+    <link rel="stylesheet" href="/Styles/modal.css">
 </head>
 
 <body>
@@ -113,6 +114,22 @@
                 <!-- Video cards populated here -->
             </div>
         </main>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-box">
+            <div class="modal-header" id="modalHeader">
+                <span id="modalTitle">NOTICE</span>
+            </div>
+            <div class="modal-body">
+                <p id="modalMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn-cancel" id="modalCancelBtn" style="display:none;">CANCEL</button>
+                <button class="modal-btn" id="modalOkBtn">OK</button>
+            </div>
+        </div>
     </div>
 
 <script src="/Script/adminAuth.js"></script>

@@ -6,6 +6,7 @@
     <title>Document</title>
     <link rel="icon" type="image/png" href="../Assets/HCLogo.png">
     <link rel="stylesheet" href="/Styles/AdminProfile.css">
+    <link rel="stylesheet" href="/Styles/modal.css">
 </head>
 <body>
      <!-- Header -->
@@ -72,30 +73,50 @@
             <div class="profile-card">
                 <div class="profile-header">
                     <h3>ADMIN INFORMATION</h3>
-                    <img src="../Assets/profile-edit.png" alt="Edit" class="edit-icon">
                 </div>
-                <form class="profile-form">
+                <form class="profile-form" id="profileForm">
                     <div class="form-group">
                         <label>Name</label>
-                        <input type="text" class="form-control" placeholder="">
+                        <input type="text" class="form-control" id="nameInput" readonly>
                     </div>
                     <div class="form-group">
                         <label>Email</label>
-                        <input type="email" class="form-control" placeholder="">
+                        <input type="email" class="form-control" id="emailInput" readonly>
                     </div>
                     <div class="form-group">
                         <label>Username</label>
-                        <input type="text" class="form-control" placeholder="">
+                        <input type="text" class="form-control" id="usernameInput" readonly>
                     </div>
                     <div class="form-group">
                         <label>Password</label>
-                        <input type="password" class="form-control" placeholder="">
+                        <input type="password" class="form-control" id="passwordInput" readonly>
                     </div>
-                    <button type="submit" class="btn-edit">EDIT</button>
+                    <div class="form-actions">
+                        <button type="button" class="btn-edit" id="editBtn">EDIT</button>
+                        <button type="submit" class="btn-save" id="saveBtn" style="display: none;">SAVE</button>
+                    </div>
                 </form>
             </div>
         </main>
     </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-box">
+            <div class="modal-header" id="modalHeader">
+                <span id="modalTitle">NOTICE</span>
+            </div>
+            <div class="modal-body">
+                <p id="modalMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn-cancel" id="modalCancelBtn" style="display:none;">CANCEL</button>
+                <button class="modal-btn" id="modalOkBtn">OK</button>
+            </div>
+        </div>
+    </div>
+
+<script type="module" src="/Script/AdminProfile.js"></script>
 <script src="/Script/adminAuth.js"></script>
 </body>
 </html>
