@@ -640,8 +640,31 @@ window.editEvent = async function(eventId) {
             await populateEditTimeSlots();
             await populateEditPrograms();
             
-            document.getElementById('editTime').value = eventData.time;
-            document.getElementById('editProgram').value = eventData.programName;
+            const editTimeSelect = document.getElementById('editTime');
+            const editProgramSelect = document.getElementById('editProgram');
+            
+            const timeExists = Array.from(editTimeSelect.options).some(opt => opt.value === eventData.time);
+            if (timeExists) {
+                editTimeSelect.value = eventData.time;
+            } else {
+                const customTimeOption = document.createElement('option');
+                customTimeOption.value = eventData.time;
+                customTimeOption.textContent = eventData.time;
+                editTimeSelect.insertBefore(customTimeOption, editTimeSelect.lastElementChild);
+                editTimeSelect.value = eventData.time;
+            }
+            
+            const programExists = Array.from(editProgramSelect.options).some(opt => opt.value === eventData.programName);
+            if (programExists) {
+                editProgramSelect.value = eventData.programName;
+            } else {
+                const customProgramOption = document.createElement('option');
+                customProgramOption.value = eventData.programName;
+                customProgramOption.textContent = eventData.programName;
+                editProgramSelect.insertBefore(customProgramOption, editProgramSelect.lastElementChild);
+                editProgramSelect.value = eventData.programName;
+            }
+            
             document.getElementById('editDescription').value = eventData.description || '';
             document.getElementById('editStatus').value = eventData.status || 'Upcoming';
             
