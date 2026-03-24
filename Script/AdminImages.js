@@ -41,7 +41,9 @@ async function loadImages() {
         card.className = "image-card";
         card.innerHTML = `
             <img src="${url}" alt="Display Image">
-            <button class="btn-delete" data-id="${docSnap.id}" data-public-id="${publicId}">DELETE</button>
+            <div class="image-actions">
+                <button class="btn-delete" data-id="${docSnap.id}" data-public-id="${publicId}">DELETE</button>
+            </div>
         `;
         grid.appendChild(card);
     });

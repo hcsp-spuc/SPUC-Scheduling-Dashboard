@@ -306,6 +306,35 @@ async function loadVideosForDisplay() {
 loadVideosForDisplay();
 setInterval(loadVideosForDisplay, 5 * 60 * 1000);
 
+// IMAGE CAROUSEL
+
+let imageList = [];
+let currentImageIndex = 0;
+let imageTimer = null;
+
+function showImage(index) {
+    if (imageList.length === 0) return;
+    currentImageIndex = index % imageList.length;
+    const img = document.getElementById('carouselImage');
+    img.src = imageList[currentImageIndex].url;
+    imageTimer = setTimeout(() => showImage(currentImageIndex + 1), 5000);
+}
+
+async function loadImagesForDisplay() {
+    try {
+        const snapshot = await getDocs(collection(db, "images"));
+        imageList = [];
+        snapshot.forEach(doc => { imageList.push(doc.data()); });
+        clearTimeout(imageTimer);
+        if (imageList.length > 0) showImage(0);
+    } catch (error) {
+        console.error('Error loading images:', error);
+    }
+}
+
+loadImagesForDisplay();
+setInterval(loadImagesForDisplay, 5 * 60 * 1000);
+
 /* CONTAINER SWAP LOGIC */
 
 function swapContainers() {
