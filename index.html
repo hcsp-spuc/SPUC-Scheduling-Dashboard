@@ -252,7 +252,7 @@ function getVideoId(url) {
 function parseDuration(durationStr) {
     if (!durationStr) return 30000;
     const match = durationStr.match(/(\d+)([smh])/i);
-    if (!match) return 30000;
+    if (!match) return 10 * 60 * 1000;
     const value = parseInt(match[1]);
     const unit = match[2].toLowerCase();
     let ms = 0;
@@ -260,7 +260,7 @@ function parseDuration(durationStr) {
         case 's': ms = value * 1000; break;
         case 'm': ms = value * 60 * 1000; break;
         case 'h': ms = value * 60 * 60 * 1000; break;
-        default: ms = 30000;
+        default: ms = 10 * 60 * 1000;
     }
     return ms;
 }
@@ -296,9 +296,10 @@ function playVideo(index) {
 async function loadVideosForDisplay() {
     try {
         const snapshot = await getDocs(collection(db, "videos"));
-        videoList = [];
-        snapshot.forEach(doc => { videoList.push(doc.data()); });
-        if (videoList.length > 0) playVideo(0);
+        const newList = [];
+        snapshot.forEach(doc => { newList.push(doc.data()); });
+        videoList = newList;
+        if (videoList.length > 0 && videoTimer === null) playVideo(0);
     } catch (error) {
         console.error('Error loading videos:', error);
     }
@@ -382,12 +383,12 @@ function swapContainers() {
             // re-load current video muted
             if (videoList.length > 0) playVideo(currentVideoIndex);
         }, 400);
-    }, 60 * 60 * 1000 - 400);
+    }, 60 * 1000 - 400);
 }
 
-setTimeout(function scheduleSwap() {
+setTimeout(() => {
     swapContainers();
-    setTimeout(scheduleSwap, 30 * 1000 + 60 * 60 * 1000);
+    setInterval(swapContainers, 90 * 1000);
 }, 30 * 1000);
 
 </script>
