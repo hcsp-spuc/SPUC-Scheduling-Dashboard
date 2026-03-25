@@ -267,6 +267,12 @@ function resetFormInputs() {
     programSelect.style.display = 'block';
     programSelect.value = '';
     clearFieldError(customProgramInput, 'programError');
+
+    document.getElementById('repeatToggle').checked = false;
+    document.getElementById('repeatOptions').style.display = 'none';
+    document.querySelectorAll('input[name="repeatDay"]').forEach(cb => cb.checked = false);
+    document.getElementById('repeatEndDate').value = '';
+    document.getElementById('repeatError').style.display = 'none';
 }
 
 function selectDate(date) {
@@ -735,6 +741,31 @@ document.getElementById('editEventForm').addEventListener('submit', async (e) =>
     }
 });
 
+// Repeat toggle
+document.getElementById('repeatToggle').addEventListener('change', (e) => {
+    document.getElementById('repeatOptions').style.display = e.target.checked ? 'block' : 'none';
+    if (!e.target.checked) {
+        document.querySelectorAll('input[name="repeatDay"]').forEach(cb => cb.checked = false);
+        document.getElementById('repeatEndDate').value = '';
+        document.getElementById('repeatError').style.display = 'none';
+    }
+});
+
+function getRepeatDates(startDate, repeatDays, endDate) {
+    const dates = [];
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+    const cursor = new Date(startDate);
+    cursor.setDate(cursor.getDate() + 1);
+    while (cursor <= end) {
+        if (repeatDays.includes(cursor.getDay())) {
+            dates.push(new Date(cursor));
+        }
+        cursor.setDate(cursor.getDate() + 1);
+    }
+    return dates;
+}
+
 document.getElementById('eventForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
@@ -761,23 +792,56 @@ document.getElementById('eventForm').addEventListener('submit', async (e) => {
         if (!hasError) showModal('Please select both time slot and program', 'error');
         return;
     }
+
+    const isRepeating = document.getElementById('repeatToggle').checked;
+    const repeatDays = isRepeating
+        ? [...document.querySelectorAll('input[name="repeatDay"]:checked')].map(cb => parseInt(cb.value))
+        : [];
+    const repeatEndDate = document.getElementById('repeatEndDate').value;
+    const repeatError = document.getElementById('repeatError');
+
+    if (isRepeating && (repeatDays.length === 0 || !repeatEndDate)) {
+        repeatError.style.display = 'block';
+        return;
+    }
+    repeatError.style.display = 'none';
+
+    if (isRepeating && new Date(repeatEndDate) <= selectedDate) {
+        showModal('Repeat end date must be after the selected date.', 'error');
+        return;
+    }
     
     try {
         const eventsSnapshot = await getDocs(collection(db, "events"));
-        const maxNum = eventsSnapshot.docs.reduce((max, d) => {
+        let maxNum = eventsSnapshot.docs.reduce((max, d) => {
             const match = d.id.match(/^event(\d+)$/);
             return match ? Math.max(max, parseInt(match[1])) : max;
         }, 0);
-        const docName = `event${maxNum + 1}`;
-        
-        await setDoc(doc(db, "events", docName), {
-            date: selectedDate.toDateString(),
+
+        const baseEventData = {
             time: timeSlot,
             programName: program,
             description: description,
             status: 'Upcoming',
             createdAt: new Date()
+        };
+
+        // Save the primary event
+        await setDoc(doc(db, "events", `event${++maxNum}`), {
+            ...baseEventData,
+            date: selectedDate.toDateString()
         });
+
+        // Save repeated events
+        if (isRepeating) {
+            const repeatDates = getRepeatDates(selectedDate, repeatDays, repeatEndDate);
+            for (const d of repeatDates) {
+                await setDoc(doc(db, "events", `event${++maxNum}`), {
+                    ...baseEventData,
+                    date: d.toDateString()
+                });
+            }
+        }
 
         // Save custom time slot to Firestore if it was a custom entry
         if (timeSlotSelect.style.display === 'none' && timeSlot) {
@@ -788,6 +852,8 @@ document.getElementById('eventForm').addEventListener('submit', async (e) => {
 
         showModal('Event added successfully!');
         document.getElementById('eventForm').reset();
+        document.getElementById('repeatToggle').checked = false;
+        document.getElementById('repeatOptions').style.display = 'none';
         timeSlotSelect.style.display = 'block';
         customTimeInput.style.display = 'none';
         programSelect.style.display = 'block';

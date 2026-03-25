@@ -102,33 +102,62 @@
                 <div class="form-header">
                     <span class="form-date" id="selectedDate">THU MARCH 12, 2026</span>
                 </div>
-                <form class="event-form" id="eventForm">
-                    <div class="form-group">
-                        <label for="timeSlot">SELECT TIME</label>
-                        <div class="time-slot-container">
-                            <select id="timeSlot" class="form-control" required>
-                                <option value="">Choose time slot</option>
-                            </select>
-                            <input type="text" id="customTimeInput" class="form-control custom-time-input" placeholder="Enter custom time (e.g., 9:00 - 10:00 AM)" style="display: none;">
-                            <span class="field-error" id="timeError">Please enter a time slot.</span>
+                <div class="event-form-layout">
+                    <form class="event-form" id="eventForm">
+                        <div class="form-group">
+                            <label for="timeSlot">SELECT TIME</label>
+                            <div class="time-slot-container">
+                                <select id="timeSlot" class="form-control" required>
+                                    <option value="">Choose time slot</option>
+                                </select>
+                                <input type="text" id="customTimeInput" class="form-control custom-time-input" placeholder="Enter custom time (e.g., 9:00 - 10:00 AM)" style="display: none;">
+                                <span class="field-error" id="timeError">Please enter a time slot.</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="program">SELECT PROGRAM</label>
+                            <div class="program-slot-container">
+                                <select id="program" class="form-control" required>
+                                    <option value="">Choose the program</option>
+                                </select>
+                                <input type="text" id="customProgramInput" class="form-control custom-program-input" placeholder="Enter custom program" style="display: none;">
+                                <span class="field-error" id="programError">Please enter a program name.</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="description">DESCRIPTION</label>
+                            <input type="text" id="description" class="form-control" placeholder="Describe the event (Optional)">
+                        </div>
+                        <button type="submit" class="btn-submit">ADD TO SCHEDULE</button>
+                    </form>
+
+                    <!-- Repeat Panel (right side) -->
+                    <div class="repeat-panel">
+                        <div class="repeat-toggle-row">
+                            <label class="repeat-toggle-label">
+                                <input type="checkbox" id="repeatToggle">
+                                REPEAT EVENT
+                            </label>
+                        </div>
+                        <div class="repeat-options" id="repeatOptions" style="display:none;">
+                            <p class="repeat-sub-label">REPEAT ON</p>
+                            <div class="repeat-days">
+                                <label class="day-check"><input type="checkbox" name="repeatDay" value="0"> SUN</label>
+                                <label class="day-check"><input type="checkbox" name="repeatDay" value="1"> MON</label>
+                                <label class="day-check"><input type="checkbox" name="repeatDay" value="2"> TUE</label>
+                                <label class="day-check"><input type="checkbox" name="repeatDay" value="3"> WED</label>
+                                <label class="day-check"><input type="checkbox" name="repeatDay" value="4"> THU</label>
+                                <label class="day-check"><input type="checkbox" name="repeatDay" value="5"> FRI</label>
+                                <label class="day-check"><input type="checkbox" name="repeatDay" value="6"> SAT</label>
+                            </div>
+                            <div class="form-group repeat-end-group">
+                                <label for="repeatEndDate">REPEAT UNTIL</label>
+                                <input type="date" id="repeatEndDate" class="form-control repeat-end-input">
+                                <span class="field-error" id="repeatError">Please select days and an end date.</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label for="program">SELECT PROGRAM</label>
-                        <div class="program-slot-container">
-                            <select id="program" class="form-control" required>
-                                <option value="">Choose the program</option>
-                            </select>
-                            <input type="text" id="customProgramInput" class="form-control custom-program-input" placeholder="Enter custom program" style="display: none;">
-                            <span class="field-error" id="programError">Please enter a program name.</span>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="description">DESCRIPTION</label>
-                        <input type="text" id="description" class="form-control" placeholder="Describe the event (Optional)">
-                    </div>
-                    <button type="submit" class="btn-submit">ADD TO SCHEDULE</button>
-                </form>
+                </div>
             </div>
 
             <!-- Current Schedule Section -->

@@ -491,10 +491,90 @@ body {
     margin-right: 10px;
 }
 
+.event-form-layout {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+}
+
 .event-form {
     display: flex;
     flex-direction: column;
     gap: 20px;
+    flex: 1;
+}
+
+/* Repeat Panel */
+.repeat-panel {
+    width: 260px;
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.repeat-toggle-row {
+    margin-bottom: 16px;
+}
+
+.repeat-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    cursor: pointer;
+    color: #ffd503;
+}
+
+.repeat-toggle-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #ffd503;
+}
+
+.repeat-sub-label {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 12px;
+}
+
+.repeat-days {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+.day-check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    color: white;
+}
+
+.day-check input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: #ffd503;
+}
+
+.repeat-end-group {
+    margin-top: 4px;
+}
+
+.repeat-end-input {
+    width: 100%;
+    color-scheme: light;
 }
 
 .form-group {
