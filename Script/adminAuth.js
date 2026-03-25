@@ -1,5 +1,9 @@
+document.documentElement.style.visibility = "hidden";
+
 if (!localStorage.getItem("isAdminLoggedIn")) {
     window.location.replace("/Page/LoginAdmin.html");
+} else {
+    document.documentElement.style.visibility = "visible";
 }
 
 document.addEventListener("DOMContentLoaded", () => {
