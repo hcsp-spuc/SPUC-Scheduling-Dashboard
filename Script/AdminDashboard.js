@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, getDocs, addDoc, query, where, setDoc, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { showModal, showConfirm, initModal } from "/Script/modal.js";
+import { showModal, showConfirm, showDeleteChoice, initModal } from "/Script/modal.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyB32ggdpwiNyZ0BKXeqwhVG7_Ei2qLF-Pw",
@@ -616,17 +616,38 @@ async function loadScheduleForDay() {
 }
 
 window.deleteEvent = async function(eventId) {
-    showConfirm('Are you sure you want to delete this event?', async () => {
+    const eventsSnapshot = await getDocs(collection(db, "events"));
+    let recurringGroupId = null;
+    eventsSnapshot.forEach(d => { if (d.id === eventId) recurringGroupId = d.data().recurringGroupId || null; });
+
+    const doDeleteOne = async () => {
         try {
             await deleteDoc(doc(db, "events", eventId));
             showModal('Event deleted successfully!');
             await loadEventCounts();
             loadScheduleForDay();
         } catch (error) {
-            console.error("Error deleting event:", error);
             showModal('Error deleting event', 'error');
         }
-    });
+    };
+
+    const doDeleteAll = async () => {
+        try {
+            const toDelete = eventsSnapshot.docs.filter(d => d.data().recurringGroupId === recurringGroupId);
+            await Promise.all(toDelete.map(d => deleteDoc(doc(db, "events", d.id))));
+            showModal(`Deleted ${toDelete.length} recurring event(s) successfully!`);
+            await loadEventCounts();
+            loadScheduleForDay();
+        } catch (error) {
+            showModal('Error deleting recurring events', 'error');
+        }
+    };
+
+    if (recurringGroupId) {
+        showDeleteChoice(doDeleteOne, doDeleteAll);
+    } else {
+        showConfirm('Are you sure you want to delete this event?', doDeleteOne);
+    }
 };
 
 window.editEvent = async function(eventId) {
@@ -818,12 +839,15 @@ document.getElementById('eventForm').addEventListener('submit', async (e) => {
             return match ? Math.max(max, parseInt(match[1])) : max;
         }, 0);
 
+        const recurringGroupId = isRepeating ? `rg_${Date.now()}` : null;
+
         const baseEventData = {
             time: timeSlot,
             programName: program,
             description: description,
             status: 'Upcoming',
-            createdAt: new Date()
+            createdAt: new Date(),
+            ...(recurringGroupId && { recurringGroupId })
         };
 
         // Save the primary event

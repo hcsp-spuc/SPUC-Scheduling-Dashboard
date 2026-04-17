@@ -54,7 +54,7 @@
 }
 
 .modal-footer {
-    padding: 0 25px 20px;
+    padding: 0 6px 20px;
     display: flex;
     justify-content: flex-end;
     gap: 10px;
@@ -79,7 +79,7 @@
 }
 
 .modal-btn-cancel {
-    background: #f0f0f0;
+    background: #efd2d2;
     color: #1B3B72;
     border: none;
     padding: 10px 30px;
@@ -94,4 +94,22 @@
 
 .modal-btn-cancel:hover {
     background: #ddd;
+}
+
+.modal-btn-secondary {
+    background: #e8eef7;
+    color: #1B3B72;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.modal-btn-secondary:hover {
+    background: #d0daea;
 }
