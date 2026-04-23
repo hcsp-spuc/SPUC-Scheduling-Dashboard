@@ -172,13 +172,11 @@ async function loadTodayEvents() {
     
     const today = new Date().toDateString();
     const snapshot = await getDocs(collection(db, "events"));
-    
+
     let eventsArray = [];
     snapshot.forEach(doc => {
         const data = doc.data();
-        if (new Date(data.date).toDateString() === today) {
-            eventsArray.push(data);
-        }
+        if (data.date === today) eventsArray.push(data);
     });
 
     eventsArray.sort((a, b) => {
@@ -262,7 +260,7 @@ async function loadTodayEvents() {
 
 loadTodayEvents();
 
-setInterval(()=>{ loadTodayEvents(); }, 60000);
+setInterval(()=>{ loadTodayEvents(); }, 10 * 60 * 1000);
 
 // VIDEO DISPLAY ROTATION
 

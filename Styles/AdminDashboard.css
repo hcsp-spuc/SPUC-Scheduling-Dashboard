@@ -646,6 +646,95 @@ option[value="custom"] {
     font-family: 'Montserrat', sans-serif;
 }
 
+.custom-time-picker {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    border-radius: 5px;
+    padding: 10px 14px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.time-picker-group {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.time-num {
+    width: 48px;
+    padding: 6px 4px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    font-family: 'Montserrat', sans-serif;
+    text-align: center;
+    color: #333;
+    -moz-appearance: textfield;
+}
+
+.time-num::-webkit-outer-spin-button,
+.time-num::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.time-num:focus {
+    outline: none;
+    border-color: #1b3b72;
+}
+
+.time-colon {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    flex-shrink: 0;
+}
+
+.time-dash {
+    font-size: 18px;
+    color: #333;
+    flex-shrink: 0;
+    padding: 0 4px;
+}
+
+.ampm-toggle {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.ampm-label {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1b3b72;
+    min-width: 28px;
+    text-align: center;
+    user-select: none;
+}
+
+.ampm-arrow {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    color: #1b3b72;
+    padding: 2px 4px;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.ampm-arrow:hover {
+    color: #ffd503;
+}
+
 .field-error {
     color: #ff6b6b;
     font-size: 13px;

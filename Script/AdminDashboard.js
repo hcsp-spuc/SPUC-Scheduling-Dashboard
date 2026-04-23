@@ -39,6 +39,44 @@ const pmSlots = [
     '8:00 - 9:00 PM'
 ];
 
+function getTimePickerValue(startHourId, startMinId, startAmPmId, endHourId, endMinId, endAmPmId) {
+    const sh = document.getElementById(startHourId).value;
+    const sm = document.getElementById(startMinId).value.toString().padStart(2, '0');
+    const sap = document.getElementById(startAmPmId).querySelector('.ampm-label').textContent;
+    const eh = document.getElementById(endHourId).value;
+    const em = document.getElementById(endMinId).value.toString().padStart(2, '0');
+    const eap = document.getElementById(endAmPmId).querySelector('.ampm-label').textContent;
+    if (!sh || !eh) return '';
+    return `${sh}:${sm} - ${eh}:${em} ${eap}`;
+}
+
+function initAmPmToggles() {
+    document.querySelectorAll('.ampm-arrow').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const label = document.getElementById(btn.dataset.target).querySelector('.ampm-label');
+            label.textContent = label.textContent === 'AM' ? 'PM' : 'AM';
+        });
+    });
+
+    document.querySelectorAll('.time-num').forEach(input => {
+        input.addEventListener('keydown', (e) => {
+            if (['e','E','+','-','.'].includes(e.key)) e.preventDefault();
+        });
+        input.addEventListener('change', () => {
+            const min = parseInt(input.min);
+            const max = parseInt(input.max);
+            let val = parseInt(input.value);
+            if (isNaN(val)) return;
+            if (val < min) input.value = min;
+            if (val > max) input.value = max;
+        });
+    });
+}
+
+function validateCustomTime(value) {
+    return /^\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}\s*(AM|PM)$/i.test(value.trim());
+}
+
 function convertTimeToMinutes(timeStr) {
     const parts = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/);
     if (!parts) return 0;
@@ -318,8 +356,7 @@ function setupTimeSlotListeners() {
     timeSlotSelect.addEventListener('change', (e) => {
         if (e.target.value === 'custom') {
             timeSlotSelect.style.display = 'none';
-            customTimeInput.style.display = 'block';
-            customTimeInput.value = '';
+            customTimeInput.style.display = 'flex';
             customTimeInput.focus();
         }
     });
@@ -328,7 +365,6 @@ function setupTimeSlotListeners() {
 
     customTimeInput.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
-            customTimeInput.value = '';
             customTimeInput.style.display = 'none';
             timeSlotSelect.style.display = 'block';
             timeSlotSelect.value = '';
@@ -446,8 +482,7 @@ function setupEditTimeSlotListeners() {
     editTimeSelect.addEventListener('change', (e) => {
         if (e.target.value === 'custom') {
             editTimeSelect.style.display = 'none';
-            editCustomTimeInput.style.display = 'block';
-            editCustomTimeInput.value = '';
+            editCustomTimeInput.style.display = 'flex';
             editCustomTimeInput.focus();
         }
     });
@@ -729,7 +764,9 @@ document.getElementById('editEventForm').addEventListener('submit', async (e) =>
     
     const editTimeSelect = document.getElementById('editTime');
     const editCustomTimeInput = document.getElementById('editCustomTimeInput');
-    const editTime = editTimeSelect.style.display === 'none' ? editCustomTimeInput.value : editTimeSelect.value;
+    const editTime = editTimeSelect.style.display === 'none'
+        ? getTimePickerValue('editStartHour','editStartMin','editStartAmPm','editEndHour','editEndMin','editEndAmPm')
+        : editTimeSelect.value;
     
     const editProgramSelect = document.getElementById('editProgram');
     const editCustomProgramInput = document.getElementById('editCustomProgramInput');
@@ -792,7 +829,9 @@ document.getElementById('eventForm').addEventListener('submit', async (e) => {
     
     const timeSlotSelect = document.getElementById('timeSlot');
     const customTimeInput = document.getElementById('customTimeInput');
-    const timeSlot = timeSlotSelect.style.display === 'none' ? customTimeInput.value.trim() : timeSlotSelect.value;
+    const timeSlot = timeSlotSelect.style.display === 'none'
+        ? getTimePickerValue('startHour','startMin','startAmPm','endHour','endMin','endAmPm')
+        : timeSlotSelect.value;
     
     const programSelect = document.getElementById('program');
     const customProgramInput = document.getElementById('customProgramInput');
@@ -801,7 +840,7 @@ document.getElementById('eventForm').addEventListener('submit', async (e) => {
     const description = document.getElementById('description').value;
 
     let hasError = false;
-    if (timeSlotSelect.style.display === 'none' && !timeSlot) {
+    if (timeSlotSelect.style.display === 'none' && !getTimePickerValue('startHour','startMin','startAmPm','endHour','endMin','endAmPm')) {
         showFieldError(customTimeInput, 'timeError');
         hasError = true;
     }
@@ -898,3 +937,4 @@ updateFormDate();
 loadTimeSlots();
 loadPrograms();
 loadScheduleForDay();
+initAmPmToggles();

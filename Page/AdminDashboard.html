@@ -110,8 +110,30 @@
                                 <select id="timeSlot" class="form-control" required>
                                     <option value="">Choose time slot</option>
                                 </select>
-                                <input type="text" id="customTimeInput" class="form-control custom-time-input" placeholder="Enter custom time (e.g., 9:00 - 10:00 AM)" style="display: none;">
-                                <span class="field-error" id="timeError">Please enter a time slot.</span>
+                                <div id="customTimeInput" class="custom-time-picker" style="display: none;">
+                                    <div class="time-picker-group">
+                                        <input type="number" class="time-num" id="startHour" min="1" max="12" placeholder="H">
+                                        <span class="time-colon">:</span>
+                                        <input type="number" class="time-num" id="startMin" min="0" max="59" placeholder="MM">
+                                        <div class="ampm-toggle" id="startAmPm">
+                                            <button type="button" class="ampm-arrow" data-target="startAmPm">&#9664;</button>
+                                            <span class="ampm-label">AM</span>
+                                            <button type="button" class="ampm-arrow" data-target="startAmPm">&#9654;</button>
+                                        </div>
+                                    </div>
+                                    <span class="time-dash">—</span>
+                                    <div class="time-picker-group">
+                                        <input type="number" class="time-num" id="endHour" min="1" max="12" placeholder="H">
+                                        <span class="time-colon">:</span>
+                                        <input type="number" class="time-num" id="endMin" min="0" max="59" placeholder="MM">
+                                        <div class="ampm-toggle" id="endAmPm">
+                                            <button type="button" class="ampm-arrow" data-target="endAmPm">&#9664;</button>
+                                            <span class="ampm-label">AM</span>
+                                            <button type="button" class="ampm-arrow" data-target="endAmPm">&#9654;</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <span class="field-error" id="timeError">Format must be H:MM - H:MM AM or PM only.</span>
                             </div>
                         </div>
                         <div class="form-group">
@@ -187,7 +209,29 @@
                         <select id="editTime" class="form-control edit-time-select" required>
                             <option value="">Choose time slot</option>
                         </select>
-                        <input type="text" id="editCustomTimeInput" class="form-control edit-custom-time-input" placeholder="Enter custom time (e.g., 9:00 - 10:00 AM)" style="display: none;">
+                        <div id="editCustomTimeInput" class="custom-time-picker" style="display: none;">
+                            <div class="time-picker-group">
+                                <input type="number" class="time-num" id="editStartHour" min="1" max="12" placeholder="H">
+                                <span class="time-colon">:</span>
+                                <input type="number" class="time-num" id="editStartMin" min="0" max="59" placeholder="MM">
+                                <div class="ampm-toggle" id="editStartAmPm">
+                                    <button type="button" class="ampm-arrow" data-target="editStartAmPm">&#9664;</button>
+                                    <span class="ampm-label">AM</span>
+                                    <button type="button" class="ampm-arrow" data-target="editStartAmPm">&#9654;</button>
+                                </div>
+                            </div>
+                            <span class="time-dash">—</span>
+                            <div class="time-picker-group">
+                                <input type="number" class="time-num" id="editEndHour" min="1" max="12" placeholder="H">
+                                <span class="time-colon">:</span>
+                                <input type="number" class="time-num" id="editEndMin" min="0" max="59" placeholder="MM">
+                                <div class="ampm-toggle" id="editEndAmPm">
+                                    <button type="button" class="ampm-arrow" data-target="editEndAmPm">&#9664;</button>
+                                    <span class="ampm-label">AM</span>
+                                    <button type="button" class="ampm-arrow" data-target="editEndAmPm">&#9654;</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="form-group">
