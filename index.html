@@ -195,6 +195,34 @@ async function loadTodayEvents() {
         return convertToMinutes(startA) - convertToMinutes(startB);
     });
 
+    let isSplitDay = eventsArray.length > 4;
+    let isPM = false;
+
+    if (isSplitDay) {
+        const now = new Date();
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+        isPM = currentMinutes >= 12 * 60 + 1;
+        eventsArray = eventsArray.filter(data => {
+            let [startStr, endStr] = data.time.split('-');
+            if (!startStr.includes('PM') && !startStr.includes('AM')) {
+                startStr += endStr.match(/(AM|PM)/i)[0];
+            }
+            const startMins = convertToMinutes(startStr);
+            return isPM ? startMins >= 12 * 60 : startMins < 12 * 60;
+        });
+    }
+
+    const switchOccurred = isSplitDay && lastIsPM !== null && lastIsPM !== isPM;
+    if (isSplitDay) lastIsPM = isPM;
+
+    if (switchOccurred) {
+        container.classList.add('period-switch-out');
+        await new Promise(resolve => setTimeout(resolve, 500));
+        container.classList.remove('period-switch-out');
+        container.classList.add('period-switch-in');
+        setTimeout(() => container.classList.remove('period-switch-in'), 600);
+    }
+
     if(eventsArray.length === 0) {
         const noEvents = document.createElement("div");
         noEvents.className = "schedule-row";
@@ -237,6 +265,8 @@ loadTodayEvents();
 setInterval(()=>{ loadTodayEvents(); }, 60000);
 
 // VIDEO DISPLAY ROTATION
+
+let lastIsPM = null;
 
 let currentVideoIndex = 0;
 let videoList = [];

@@ -382,6 +382,24 @@ html, body {
     height: 100%;
 }
 
+@keyframes periodSwitchOut {
+    from { opacity: 1; transform: translateX(0); }
+    to   { opacity: 0; transform: translateX(-60px); }
+}
+
+@keyframes periodSwitchIn {
+    from { opacity: 0; transform: translateX(60px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+.period-switch-out {
+    animation: periodSwitchOut 0.5s ease forwards;
+}
+
+.period-switch-in {
+    animation: periodSwitchIn 0.6s ease forwards;
+}
+
 /* --- SWAP ANIMATION --- */
 @keyframes swapIn {
     from { opacity: 0; transform: scale(0.95); }
