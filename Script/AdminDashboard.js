@@ -931,6 +931,21 @@ document.getElementById('eventForm').addEventListener('submit', async (e) => {
     }
 });
 
+async function deleteLastWeekEvents() {
+    const startOfThisWeek = new Date();
+    startOfThisWeek.setHours(0, 0, 0, 0);
+    startOfThisWeek.setDate(startOfThisWeek.getDate() - startOfThisWeek.getDay());
+
+    const snapshot = await getDocs(collection(db, "events"));
+    const toDelete = snapshot.docs.filter(d => {
+        const eventDate = new Date(d.data().date);
+        return eventDate < startOfThisWeek;
+    });
+
+    await Promise.all(toDelete.map(d => deleteDoc(doc(db, "events", d.id))));
+}
+
+deleteLastWeekEvents();
 loadEventCounts();
 updateMonthDisplay();
 updateFormDate();
