@@ -272,7 +272,7 @@ let videoTimer = null;
 let isSwapped = false;
 
 function getVideoId(url) {
-    const regExp = /(?:youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*)./;
+    const regExp = /(?:youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]{11})/;
     const match = url.match(regExp);
     return match ? match[1] : null;
 }
@@ -301,7 +301,7 @@ function playVideo(index) {
     const videoId = getVideoId(video.url);
 
     if (videoId) {
-        const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=${isSwapped ? 0 : 1}&controls=0`;
+        const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=1&origin=${location.origin}`;
         const videoBox = document.querySelector('.video-box');
         videoBox.innerHTML = '';
 

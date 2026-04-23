@@ -392,6 +392,25 @@ body {
     font-size: 0.8vh;
 }
 
+.embed-badge {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    font-size: 1.1vh;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    color: white;
+}
+
+.embed-badge.embeddable {
+    background: #1a9e3f;
+}
+
+.embed-badge.not-embeddable {
+    background: #e00;
+}
+
 .video-title {
     font-size: 18px;
     font-weight: 500;

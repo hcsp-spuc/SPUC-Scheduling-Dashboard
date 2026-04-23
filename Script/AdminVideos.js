@@ -27,6 +27,16 @@ function getYouTubeThumbnail(videoId) {
     return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
 }
 
+// Check if YouTube video is embeddable
+async function isEmbeddable(videoId) {
+    try {
+        const res = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
+        return res.ok;
+    } catch {
+        return false;
+    }
+}
+
 // Load and display videos
 async function loadVideos() {
     const videoGrid = document.getElementById("videoGrid");
@@ -39,10 +49,13 @@ async function loadVideos() {
         return;
     }
     
-    snapshot.forEach(doc => {
-        const data = doc.data();
+    const cards = [];
+    snapshot.forEach(doc => cards.push({ id: doc.id, data: doc.data() }));
+
+    await Promise.all(cards.map(async ({ id, data }) => {
         const videoId = extractYouTubeId(data.url);
         const thumbnail = getYouTubeThumbnail(videoId);
+        const embeddable = await isEmbeddable(videoId);
         
         const card = document.createElement("div");
         card.className = "video-card";
@@ -50,14 +63,17 @@ async function loadVideos() {
             <div class="video-thumbnail">
                 <img src="${thumbnail}" alt="${data.title}">
                 <div class="live-badge">${data.duration || "N/A"}</div>
+                <div class="embed-badge ${embeddable ? 'embeddable' : 'not-embeddable'}">
+                    ${embeddable ? '✔ Embeddable' : '✘ Not Embeddable'}
+                </div>
             </div>
             <p class="video-title">${data.title}</p>
-            <button class="btn-delete" data-id="${doc.id}">DELETE</button>
+            <button class="btn-delete" data-id="${id}">DELETE</button>
         `;
         
-        card.querySelector(".btn-delete").addEventListener("click", () => deleteVideo(doc.id));
+        card.querySelector(".btn-delete").addEventListener("click", () => deleteVideo(id));
         videoGrid.appendChild(card);
-    });
+    }));
 }
 
 // Add video
