@@ -15,9 +15,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Extract YouTube video ID from URL
+// Extract YouTube video ID from URL (supports /live/ URLs too)
 function extractYouTubeId(url) {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|\/live\/)([^#\&\?]*).*/;
     const match = url.match(regExp);
     return match && match[2].length === 11 ? match[2] : null;
 }
@@ -54,18 +54,16 @@ async function loadVideos() {
 
     await Promise.all(cards.map(async ({ id, data }) => {
         const videoId = extractYouTubeId(data.url);
-        const thumbnail = getYouTubeThumbnail(videoId);
-        const embeddable = await isEmbeddable(videoId);
+        const thumbnail = videoId ? getYouTubeThumbnail(videoId) : '';
+        const embeddable = videoId ? await isEmbeddable(videoId) : false;
         
         const card = document.createElement("div");
         card.className = "video-card";
         card.innerHTML = `
             <div class="video-thumbnail">
-                <img src="${thumbnail}" alt="${data.title}">
-                <div class="live-badge">${data.duration || "N/A"}</div>
-                <div class="embed-badge ${embeddable ? 'embeddable' : 'not-embeddable'}">
-                    ${embeddable ? '✔ Embeddable' : '✘ Not Embeddable'}
-                </div>
+                ${thumbnail ? `<img src="${thumbnail}" alt="${data.title}">` : `<div class="thumbnail-placeholder">LIVE</div>`}
+                <div class="live-badge">${data.isLive ? '🔴 LIVE' : (data.duration || 'N/A')}</div>
+                ${!data.isLive ? `<div class="embed-badge ${embeddable ? 'embeddable' : 'not-embeddable'}">${embeddable ? '✔ Embeddable' : '✘ Not Embeddable'}</div>` : ''}
             </div>
             <p class="video-title">${data.title}</p>
             <button class="btn-delete" data-id="${id}">DELETE</button>
@@ -86,6 +84,8 @@ async function addVideo() {
     const url = urlInput.value.trim();
     const duration = selectedDurationInput.value.trim();
     
+    const isLive = document.getElementById("isLiveCheckbox").checked;
+
     if (!title || !url) {
         showModal("Please fill in title and URL", 'error');
         return;
@@ -116,17 +116,17 @@ async function addVideo() {
         const nextNumber = maxNumber + 1;
         const docId = `video${nextNumber}`;
         
-        await setDoc(doc(db, "videos", docId), {
-            title,
-            url,
-            duration
-        });
+        const videoData = { title, url, duration };
+        if (isLive) videoData.isLive = true;
+
+        await setDoc(doc(db, "videos", docId), videoData);
         
         titleInput.value = "";
         urlInput.value = "";
         selectedDurationInput.value = "";
         document.getElementById("durationBtn").textContent = "Select Duration";
         document.getElementById("customDurationInput").value = "";
+        document.getElementById("isLiveCheckbox").checked = false;
         loadVideos();
     } catch (error) {
         console.error("Error adding video:", error);
@@ -219,5 +219,6 @@ document.addEventListener("DOMContentLoaded", () => {
         selectedDurationInput.value = "";
         durationBtn.textContent = "Select Duration";
         customDurationInput.value = "";
+        document.getElementById("isLiveCheckbox").checked = false;
     });
 });

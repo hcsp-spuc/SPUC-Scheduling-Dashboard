@@ -272,7 +272,7 @@ let videoTimer = null;
 let isSwapped = false;
 
 function getVideoId(url) {
-    const regExp = /(?:youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]{11})/;
+    const regExp = /(?:youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|\/live\/)([^#\&\?]{11})/;
     const match = url.match(regExp);
     return match ? match[1] : null;
 }
@@ -293,45 +293,44 @@ function parseDuration(durationStr) {
     return ms;
 }
 
+function renderVideo(videoId, muted) {
+    const videoBox = document.querySelector('.video-box');
+    videoBox.innerHTML = '';
+    const iframe = document.createElement('iframe');
+    iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=${muted ? 1 : 0}&controls=1&origin=${location.origin}`;
+    iframe.width = '100%';
+    iframe.height = '100%';
+    iframe.frameBorder = '0';
+    iframe.allow = 'autoplay; encrypted-media';
+    iframe.allowFullscreen = true;
+    videoBox.appendChild(iframe);
+}
+
 function playVideo(index) {
     if (videoList.length === 0) return;
 
     currentVideoIndex = index % videoList.length;
     const video = videoList[currentVideoIndex];
     const videoId = getVideoId(video.url);
+    if (!videoId) return;
 
-    if (videoId) {
-        const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=1&origin=${location.origin}`;
-        const videoBox = document.querySelector('.video-box');
-        videoBox.innerHTML = '';
+    clearTimeout(videoTimer);
 
-        const iframe = document.createElement('iframe');
-        iframe.src = embedUrl;
-        iframe.width = '100%';
-        iframe.height = '100%';
-        iframe.frameBorder = '0';
-        iframe.allow = 'autoplay; encrypted-media';
-        iframe.allowFullscreen = true;
-        videoBox.appendChild(iframe);
-
-        clearTimeout(videoTimer);
-        const duration = parseDuration(video.duration);
-
-        if (!isSwapped) {
-            // Normal mode: when this video ends, swap in and play next video
-            videoTimer = setTimeout(() => {
-                enterSwap();
-            }, duration);
-        } else {
-            // Swapped mode: when this video ends, unswap then play next video
-            videoTimer = setTimeout(() => {
-                exitSwap();
-            }, duration);
+    if (video.isLive) {
+        if (!isSwapped) enterSwap(true);
+        else {
+            renderVideo(videoId, false);
+            videoTimer = setTimeout(() => exitSwap(), parseDuration(video.duration));
         }
+        return;
     }
+
+    renderVideo(videoId, !isSwapped);
+    const duration = parseDuration(video.duration);
+    videoTimer = setTimeout(() => { isSwapped ? exitSwap() : enterSwap(false); }, duration);
 }
 
-function enterSwap() {
+function enterSwap(forLive = false) {
     const contentLayout = document.querySelector('.content-layout');
     const listContainer = document.querySelector('.list-container');
     const previewArea = document.querySelector('.preview-area');
@@ -343,8 +342,8 @@ function enterSwap() {
     previewArea.appendChild(listContainer);
     listContainer.classList.add('swapped');
 
-    // Advance to next video and play it unmuted in swapped mode
-    playVideo(currentVideoIndex + 1);
+    const nextIndex = forLive ? currentVideoIndex : currentVideoIndex + 1;
+    playVideo(nextIndex);
 }
 
 function exitSwap() {
@@ -374,6 +373,7 @@ async function loadVideosForDisplay() {
         const snapshot = await getDocs(collection(db, "videos"));
         const newList = [];
         snapshot.forEach(doc => { newList.push(doc.data()); });
+        newList.sort((a, b) => (b.isLive ? 1 : 0) - (a.isLive ? 1 : 0));
         videoList = newList;
         if (videoList.length > 0 && videoTimer === null) playVideo(0);
     } catch (error) {
