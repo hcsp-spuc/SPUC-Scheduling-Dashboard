@@ -176,17 +176,31 @@ function parseEventTimes(timeStr) {
 
 async function loadTodayEvents() {
     const container = document.querySelector(".list-container");
-    
+
+    // Fade out existing rows
+    const existingRows = container.querySelectorAll('.schedule-row');
+    if (existingRows.length > 0) {
+        existingRows.forEach(row => { row.style.transition = 'opacity 0.3s ease'; row.style.opacity = '0'; });
+        await new Promise(resolve => setTimeout(resolve, 320));
+    }
+
+    // Show spinning logo while fetching
+    const dayHighlight = document.querySelector('.day-highlight');
+    const todayDateEl = document.getElementById('todayDate');
     const headerHTML = `
         <div class="schedule-header">
             <p class="subtitle">TODAY'S SCHEDULE</p>
             <h1 class="date-display" id="todayDate">
-                <span class="day-highlight">${document.querySelector('.day-highlight').textContent}</span> 
-                ${document.getElementById("todayDate").innerText.split(' ').slice(1).join(' ')}
+                <span class="day-highlight">${dayHighlight ? dayHighlight.textContent : ''}</span> 
+                ${todayDateEl ? todayDateEl.innerText.split(' ').slice(1).join(' ') : ''}
             </h1>
+        </div>
+        <div class="schedule-loading">
+            <img src="Assets/HCLogo.png" alt="Loading">
+            <span>Refreshing</span>
         </div>`;
     container.innerHTML = headerHTML;
-    
+
     const today = new Date().toDateString();
     const snapshot = await getDocs(collection(db, "events"));
 
@@ -226,6 +240,10 @@ async function loadTodayEvents() {
         setTimeout(() => container.classList.remove('period-switch-in'), 600);
     }
 
+    // Remove loading spinner
+    const loadingEl = container.querySelector('.schedule-loading');
+    if (loadingEl) loadingEl.remove();
+
     if(eventsArray.length === 0) {
         const noEvents = document.createElement("div");
         noEvents.className = "schedule-row";
@@ -235,7 +253,7 @@ async function loadTodayEvents() {
         `;
         container.appendChild(noEvents);
     } else {
-            eventsArray.forEach(data => {
+            eventsArray.forEach((data, i) => {
             const { startMinutes, endMinutes } = parseEventTimes(data.time);
             const now = new Date();
             const currentMinutes = now.getHours() * 60 + now.getMinutes();
@@ -246,7 +264,8 @@ async function loadTodayEvents() {
             }
 
             const row = document.createElement("div");
-            row.className = "schedule-row" + (currentMinutes > endMinutes ? " done" : "");
+            row.className = "schedule-row row-enter" + (currentMinutes > endMinutes ? " done" : "");
+            row.style.animationDelay = `${i * 80}ms`;
             row.innerHTML = `
                 <span class="time-range">${data.time}</span>
                 <span class="program-name">${data.programName || 'UNDEFINED'}</span>
