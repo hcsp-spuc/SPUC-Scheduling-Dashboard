@@ -156,6 +156,23 @@ function convertToMinutes(timeString) {
     return h * 60 + m;
 }
 
+function parseEventTimes(timeStr) {
+    let [startStr, endStr] = timeStr.split('-').map(s => s.trim());
+    const endMinutes = convertToMinutes(endStr);
+    if (!startStr.includes('PM') && !startStr.includes('AM')) {
+        const endIsPM = endStr.toUpperCase().includes('PM');
+        const startHour = parseInt(startStr.split(':')[0]);
+        const endHour = parseInt(endStr.replace(/(AM|PM)/i, '').split(':')[0]);
+        // start is AM if: end is not PM, or start hour >= end hour (crosses noon), or end hour is 12 (noon)
+        if (!endIsPM || startHour >= endHour || endHour === 12) {
+            startStr += 'AM';
+        } else {
+            startStr += 'PM';
+        }
+    }
+    return { startMinutes: convertToMinutes(startStr), endMinutes };
+}
+
 
 async function loadTodayEvents() {
     const container = document.querySelector(".list-container");
@@ -180,17 +197,9 @@ async function loadTodayEvents() {
     });
 
     eventsArray.sort((a, b) => {
-        let [startA, endA] = a.time.split('-');
-        let [startB, endB] = b.time.split('-');
-        
-        if (!startA.includes('PM') && !startA.includes('AM')) {
-            startA += endA.match(/(AM|PM)/i)[0];
-        }
-        if (!startB.includes('PM') && !startB.includes('AM')) {
-            startB += endB.match(/(AM|PM)/i)[0];
-        }
-        
-        return convertToMinutes(startA) - convertToMinutes(startB);
+        const { startMinutes: startA } = parseEventTimes(a.time);
+        const { startMinutes: startB } = parseEventTimes(b.time);
+        return startA - startB;
     });
 
     let isSplitDay = eventsArray.length > 4;
@@ -201,12 +210,8 @@ async function loadTodayEvents() {
         const currentMinutes = now.getHours() * 60 + now.getMinutes();
         isPM = currentMinutes >= 12 * 60 + 1;
         eventsArray = eventsArray.filter(data => {
-            let [startStr, endStr] = data.time.split('-');
-            if (!startStr.includes('PM') && !startStr.includes('AM')) {
-                startStr += endStr.match(/(AM|PM)/i)[0];
-            }
-            const startMins = convertToMinutes(startStr);
-            return isPM ? startMins >= 12 * 60 : startMins < 12 * 60;
+            const { startMinutes } = parseEventTimes(data.time);
+            return isPM ? startMinutes >= 12 * 60 : startMinutes < 12 * 60;
         });
     }
 
@@ -231,13 +236,7 @@ async function loadTodayEvents() {
         container.appendChild(noEvents);
     } else {
         eventsArray.forEach(data => {
-            let [startStr, endStr] = data.time.split('-');
-            if (!startStr.includes('PM') && !startStr.includes('AM')) {
-                startStr += endStr.match(/(AM|PM)/i)[0];
-            }
-
-            const startMinutes = convertToMinutes(startStr);
-            const endMinutes = convertToMinutes(endStr);
+            const { startMinutes, endMinutes } = parseEventTimes(data.time);
             const now = new Date();
             const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
@@ -258,13 +257,13 @@ async function loadTodayEvents() {
     }
 }
 
+let lastIsPM = null;
+
 loadTodayEvents();
 
 setInterval(()=>{ loadTodayEvents(); }, 10 * 60 * 1000);
 
 // VIDEO DISPLAY ROTATION
-
-let lastIsPM = null;
 
 let currentVideoIndex = 0;
 let videoList = [];
