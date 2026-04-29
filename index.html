@@ -297,6 +297,20 @@ window.onYouTubeIframeAPIReady = function() {
     }
 };
 
+function parseDuration(durationStr) {
+    if (!durationStr || durationStr === 'original') return null;
+    const match = durationStr.match(/(\d+)([smh])/i);
+    if (!match) return null;
+    const value = parseInt(match[1]);
+    const unit = match[2].toLowerCase();
+    switch(unit) {
+        case 's': return value * 1000;
+        case 'm': return value * 60 * 1000;
+        case 'h': return value * 60 * 60 * 1000;
+        default:  return null;
+    }
+}
+
 function createYTPlayer(videoId, muted, onEnd) {
     const videoBox = document.querySelector('.video-box');
     videoBox.innerHTML = '<div id="yt-player-el"></div>';
@@ -314,26 +328,30 @@ function createYTPlayer(videoId, muted, onEnd) {
     });
 }
 
-function renderVideo(videoId, muted, onEnd) {
+function renderVideo(videoId, muted, onEnd, duration) {
+    clearTimeout(videoTimer);
+    const ms = parseDuration(duration);
     if (ytPlayerReady) {
         createYTPlayer(videoId, muted, onEnd);
     } else {
         pendingOnEnd = { videoId, muted, onEnd };
     }
+    if (ms !== null) videoTimer = setTimeout(onEnd, ms);
 }
 
-// Step 1: Play video in normal (small) mode. When video ends -> enter swap with next video.
+// Step 1: Play video in normal (small) mode. When duration ends (or video ends if original) -> enter swap with next video.
 function playNormal(index) {
     if (videoList.length === 0) return;
     currentVideoIndex = index % videoList.length;
     const video = videoList[currentVideoIndex];
     const videoId = getVideoId(video.url);
     if (!videoId) { playNormal(currentVideoIndex + 1); return; }
-    clearTimeout(videoTimer);
-    renderVideo(videoId, false, () => enterSwap(currentVideoIndex + 1));
+    let fired = false;
+    const onEnd = () => { if (fired) return; fired = true; clearTimeout(videoTimer); enterSwap(currentVideoIndex + 1); };
+    renderVideo(videoId, false, onEnd, video.duration);
 }
 
-// Step 2: Swap layout and play the given index. When video ends -> play next in swap, or exit if no more live videos.
+// Step 2: Swap layout and play the given index. When duration ends -> play next in swap, or exit if no more live videos.
 function enterSwap(nextIndex) {
     const contentLayout = document.querySelector('.content-layout');
     const listContainer = document.querySelector('.list-container');
@@ -352,12 +370,12 @@ function enterSwap(nextIndex) {
     const video = videoList[currentVideoIndex];
     const videoId = getVideoId(video.url);
     if (!videoId) { enterSwap(currentVideoIndex + 1); return; }
-    clearTimeout(videoTimer);
 
     const isLive = !!video.isLive;
+    let fired = false;
     const onEnd = isLive
         ? () => {
-            // Live video ended — check if there's another live video next, otherwise exit swap
+            if (fired) return; fired = true; clearTimeout(videoTimer);
             const nextIdx = (currentVideoIndex + 1) % videoList.length;
             if (videoList[nextIdx] && videoList[nextIdx].isLive) {
                 enterSwap(nextIdx);
@@ -365,9 +383,9 @@ function enterSwap(nextIndex) {
                 exitSwap();
             }
         }
-        : () => exitSwap();
+        : () => { if (fired) return; fired = true; clearTimeout(videoTimer); exitSwap(); };
 
-    renderVideo(videoId, false, onEnd);
+    renderVideo(videoId, false, onEnd, isLive ? null : video.duration);
 }
 
 // Step 3: Restore layout and play next video in normal mode.
