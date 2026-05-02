@@ -287,6 +287,10 @@ html, body {
     font-size: 28px;
 }
 
+.list-container.compact .program-description {
+    font-size: 16px;
+}
+
 .time-range {
     font-size: 28px;
     font-weight: 900;
@@ -296,12 +300,24 @@ html, body {
     border-right: 4px solid #1e3a5f;
 }
 
+.program-info {
+    display: flex;
+    flex-direction: column;
+    padding-left: 30px;
+}
+
 .program-name {
     font-size: 36px;
     font-weight: 900;
     text-transform: uppercase;
     letter-spacing: 1px;
-    padding-left: 30px;
+}
+
+.program-description {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
 }
 
 /* --- ON-GOING BADGE --- */
@@ -540,10 +556,17 @@ html, body {
     border-right-width: 2px;
 }
 
+.list-container.swapped .program-info {
+    padding-left: 10px;
+}
+
 .list-container.swapped .program-name {
     font-size: 13px;
     font-weight: 800;
-    padding-left: 10px;
+}
+
+.list-container.swapped .program-description {
+    font-size: 10px;
 }
 
 .list-container.swapped .ongoing-badge {

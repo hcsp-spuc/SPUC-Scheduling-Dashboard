@@ -268,7 +268,10 @@ async function loadTodayEvents() {
             row.style.animationDelay = `${i * 80}ms`;
             row.innerHTML = `
                 <span class="time-range">${data.time}</span>
-                <span class="program-name">${data.programName || 'UNDEFINED'}</span>
+                <div class="program-info">
+                    <span class="program-name">${data.programName || 'UNDEFINED'}</span>
+                    ${data.description ? `<span class="program-description">${data.description}</span>` : ''}
+                </div>
                 ${badge}
             `;
             container.appendChild(row);
