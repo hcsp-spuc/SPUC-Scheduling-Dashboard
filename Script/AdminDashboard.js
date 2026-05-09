@@ -873,6 +873,20 @@ document.getElementById('eventForm').addEventListener('submit', async (e) => {
     
     try {
         const eventsSnapshot = await getDocs(collection(db, "events"));
+
+        const isDuplicate = eventsSnapshot.docs.some(d => {
+            const ev = d.data();
+            return ev.date === selectedDate.toDateString() &&
+                ev.time === timeSlot &&
+                ev.programName === program &&
+                (ev.description || '') === description;
+        });
+
+        if (isDuplicate) {
+            showModal('A schedule with the same program, time, and description already exists on this date.', 'error');
+            return;
+        }
+
         let maxNum = eventsSnapshot.docs.reduce((max, d) => {
             const match = d.id.match(/^event(\d+)$/);
             return match ? Math.max(max, parseInt(match[1])) : max;
@@ -908,9 +922,12 @@ document.getElementById('eventForm').addEventListener('submit', async (e) => {
 
         // Save custom time slot to Firestore if it was a custom entry
         if (timeSlotSelect.style.display === 'none' && timeSlot) {
-            const existingSlots = await getDocs(collection(db, "timeslots"));
-            const alreadyExists = [...existingSlots.docs].some(d => d.data().slot === timeSlot);
-            if (!alreadyExists) await addDoc(collection(db, "timeslots"), { slot: timeSlot });
+            const isHardcoded = amSlots.includes(timeSlot) || pmSlots.includes(timeSlot);
+            if (!isHardcoded) {
+                const existingSlots = await getDocs(collection(db, "timeslots"));
+                const alreadyExists = existingSlots.docs.some(d => d.data().slot === timeSlot);
+                if (!alreadyExists) await addDoc(collection(db, "timeslots"), { slot: timeSlot });
+            }
         }
 
         showModal('Event added successfully!');
@@ -931,6 +948,16 @@ document.getElementById('eventForm').addEventListener('submit', async (e) => {
     }
 });
 
+async function deduplicateTimeslots() {
+    const snapshot = await getDocs(collection(db, "timeslots"));
+    const seen = new Set();
+    await Promise.all(snapshot.docs.map(d => {
+        const slot = d.data().slot;
+        if (!slot || seen.has(slot)) return deleteDoc(doc(db, "timeslots", d.id));
+        seen.add(slot);
+    }));
+}
+
 async function deleteLastWeekEvents() {
     const startOfThisWeek = new Date();
     startOfThisWeek.setHours(0, 0, 0, 0);
@@ -946,6 +973,7 @@ async function deleteLastWeekEvents() {
 }
 
 deleteLastWeekEvents();
+deduplicateTimeslots();
 loadEventCounts();
 updateMonthDisplay();
 updateFormDate();
