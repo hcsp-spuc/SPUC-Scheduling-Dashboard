@@ -372,8 +372,15 @@ body {
     font-size: 28px;
     font-weight: 600;
     color: #1b3b72;
-    margin-bottom: 20px;
+    margin-bottom: 6px;
     letter-spacing: 1px;
+}
+
+.drag-hint {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 16px;
+    font-style: italic;
 }
 
 .video-grid {
@@ -386,6 +393,44 @@ body {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    cursor: grab;
+}
+
+.video-card.dragging {
+    opacity: 0.4;
+    cursor: grabbing;
+}
+
+.drag-handle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 20px;
+    color: #aaa;
+    cursor: grab;
+    user-select: none;
+    line-height: 1;
+    letter-spacing: 2px;
+}
+
+.drag-handle:hover {
+    color: #1b3b72;
+}
+
+.play-order {
+    background: #1b3b72;
+    color: #FFD503;
+    font-size: 13px;
+    font-weight: 700;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0;
+    flex-shrink: 0;
 }
 
 .video-thumbnail {

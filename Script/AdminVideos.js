@@ -37,6 +37,54 @@ async function isEmbeddable(videoId) {
     }
 }
 
+// Save order of all video cards to Firestore
+async function saveOrder() {
+    const cards = document.querySelectorAll("#videoGrid .video-card");
+    const updates = [];
+    cards.forEach((card, index) => {
+        updates.push(setDoc(doc(db, "videos", card.dataset.id), { order: index }, { merge: true }));
+    });
+    await Promise.all(updates);
+}
+
+// Drag-and-drop state
+let dragSrc = null;
+
+function onDragStart(e) {
+    dragSrc = this;
+    this.classList.add("dragging");
+    e.dataTransfer.effectAllowed = "move";
+}
+
+function onDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    const grid = document.getElementById("videoGrid");
+    const target = e.target.closest(".video-card");
+    if (target && target !== dragSrc) {
+        const cards = [...grid.querySelectorAll(".video-card")];
+        const srcIdx = cards.indexOf(dragSrc);
+        const tgtIdx = cards.indexOf(target);
+        if (srcIdx < tgtIdx) {
+            grid.insertBefore(dragSrc, target.nextSibling);
+        } else {
+            grid.insertBefore(dragSrc, target);
+        }
+    }
+}
+
+function updateOrderBadges() {
+    document.querySelectorAll("#videoGrid .video-card").forEach((card, i) => {
+        card.querySelector(".play-order").textContent = i + 1;
+    });
+}
+
+function onDragEnd() {
+    this.classList.remove("dragging");
+    updateOrderBadges();
+    saveOrder();
+}
+
 // Load and display videos
 async function loadVideos() {
     const videoGrid = document.getElementById("videoGrid");
@@ -50,16 +98,21 @@ async function loadVideos() {
     }
     
     const cards = [];
-    snapshot.forEach(doc => cards.push({ id: doc.id, data: doc.data() }));
+    snapshot.forEach(docSnap => cards.push({ id: docSnap.id, data: docSnap.data() }));
+    cards.sort((a, b) => (a.data.order ?? Infinity) - (b.data.order ?? Infinity));
 
-    await Promise.all(cards.map(async ({ id, data }) => {
+    const cardEls = new Array(cards.length);
+    await Promise.all(cards.map(async ({ id, data }, index) => {
         const videoId = extractYouTubeId(data.url);
         const thumbnail = videoId ? getYouTubeThumbnail(videoId) : '';
         const embeddable = videoId ? await isEmbeddable(videoId) : false;
         
         const card = document.createElement("div");
         card.className = "video-card";
+        card.dataset.id = id;
+        card.draggable = true;
         card.innerHTML = `
+            <div class="drag-handle" title="Drag to reorder"><span class="play-order">${index + 1}</span> ⠿</div>
             <div class="video-thumbnail">
                 ${thumbnail ? `<img src="${thumbnail}" alt="${data.title}">` : `<div class="thumbnail-placeholder">LIVE</div>`}
                 <div class="live-badge">${data.isLive ? '🔴 LIVE' : (data.duration || 'N/A')}</div>
@@ -70,8 +123,12 @@ async function loadVideos() {
         `;
         
         card.querySelector(".btn-delete").addEventListener("click", () => deleteVideo(id));
-        videoGrid.appendChild(card);
+        card.addEventListener("dragstart", onDragStart);
+        card.addEventListener("dragover", onDragOver);
+        card.addEventListener("dragend", onDragEnd);
+        cardEls[index] = card;
     }));
+    cardEls.forEach(card => videoGrid.appendChild(card));
 }
 
 // Add video
@@ -122,6 +179,10 @@ async function addVideo() {
         } else {
             videoData.duration = duration;
         }
+
+        let maxOrder = -1;
+        snapshot.forEach(d => { const o = d.data().order; if (typeof o === 'number' && o > maxOrder) maxOrder = o; });
+        videoData.order = maxOrder + 1;
 
         await setDoc(doc(db, "videos", docId), videoData);
         

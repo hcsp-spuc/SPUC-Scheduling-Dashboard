@@ -436,8 +436,8 @@ async function loadVideosForDisplay() {
         const newList = [];
         snapshot.forEach(doc => { newList.push(doc.data()); });
 
-        const liveVideos = newList.filter(v => v.isLive);
-        const regularVideos = newList.filter(v => !v.isLive);
+        const liveVideos = newList.filter(v => v.isLive).sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity));
+        const regularVideos = newList.filter(v => !v.isLive).sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity));
         const newLiveId = liveVideos.length > 0 ? getVideoId(liveVideos[0].url) : null;
 
         // New live video detected — interrupt and prioritize it in swapped mode
