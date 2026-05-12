@@ -122,7 +122,7 @@ document.getElementById("todayDate").innerHTML =
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, getDocs, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
 apiKey: "AIzaSyB32ggdpwiNyZ0BKXeqwhVG7_Ei2qLF-Pw",
@@ -511,6 +511,13 @@ async function loadImagesForDisplay() {
 
 loadImagesForDisplay();
 setInterval(loadImagesForDisplay, 5 * 60 * 1000);
+
+// Listen for admin refresh signal via Firestore
+let refreshInitialized = false;
+onSnapshot(doc(db, 'system', 'refresh'), () => {
+    if (!refreshInitialized) { refreshInitialized = true; return; }
+    location.reload();
+});
 
 
 </script>

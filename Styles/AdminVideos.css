@@ -139,31 +139,7 @@ body {
     left: 0;
     top: 23vh;
     height: calc(100vh - 23vh);
-    overflow-y: auto;
-}
-
-.admin-profile {
-    text-align: center;
-    margin-bottom: 40px;
-    padding-bottom: 30px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.admin-icon {
-    width: 60px;
-    height: 60px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 32px;
-    margin: 0 auto 10px;
-}
-
-.admin-icon-img {
-    width: auto;
-    height: 120px;
+    overflow: hidden;
     object-fit: contain;
 }
 
@@ -224,6 +200,27 @@ body {
     margin-top: auto;
     border-top: 1px solid rgba(255, 255, 255, 0.2);
     padding-top: 20px;
+}
+
+.refresh-display-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    color: #FFD503;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    padding-top: 20px;
+    margin-top: 10px;
+    gap: 12px;
+}
+
+.refresh-display-btn .menu-text {
+    flex: unset;
+}
+
+.refresh-display-btn:hover {
+    background: rgba(255, 213, 3, 0.15);
+    transform: translateX(5px);
 }
 
 /* Main Content */

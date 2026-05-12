@@ -57,6 +57,10 @@
                     <span class="menu-text">PROFILE</span>
                 </a>
             </nav>
+            <button class="menu-item refresh-display-btn" onclick="refreshDisplay()" title="Refresh display screen">
+                <span style="font-size:18px;">&#x21BB;</span>
+                <span class="menu-text">REFRESH DISPLAY</span>
+            </button>
             <a href="#" class="menu-item sign-out">
                 <img src="../Assets/signout.png" alt="Sign Out" class="menu-icon-img">
                 <span class="menu-text">SIGN OUT</span>
@@ -279,7 +283,14 @@
         </div>
     </div>
 
-    <script src="../Script/adminAuth.js"></script>
-    <script type="module" src="../Script/AdminDashboard.js"></script>
+    <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const _app = initializeApp({ apiKey: "AIzaSyB32ggdpwiNyZ0BKXeqwhVG7_Ei2qLF-Pw", authDomain: "hcsp-scheduling-system.firebaseapp.com", projectId: "hcsp-scheduling-system", storageBucket: "hcsp-scheduling-system.firebasestorage.app", messagingSenderId: "498610158944", appId: "1:498610158944:web:d4c6778a849016e12c7205" });
+const _db = getFirestore(_app);
+window.refreshDisplay = () => setDoc(doc(_db, 'system', 'refresh'), { trigger: Date.now() });
+</script>
+<script src="../Script/adminAuth.js"></script>
+<script type="module" src="../Script/AdminDashboard.js"></script>
 </body>
 </html>
