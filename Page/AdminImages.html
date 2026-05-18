@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin | Images Management</title>
-    <link rel="icon" type="image/png" href="../Assets/HCLogo.png">
+    <link rel="icon" type="image/png" href="/Assets/HCLogo.png">
     <link rel="stylesheet" href="/Styles/AdminImage.css">
     <link rel="stylesheet" href="/Styles/modal.css">
 </head>
@@ -16,7 +16,7 @@
         <div class="header-white">
             <div class="header-content">
                 <div class="header-left">
-                    <img src="../Assets/HCLogo.png" alt="Hope Channel Logo" class="hc-logo">
+                    <img src="/Assets/HCLogo.png" alt="Hope Channel Logo" class="hc-logo">
                     <div class="header-text">
                         <p class="welcome-text">WELCOME TO</p>
                         <h1 class="channel-name">Hope Channel</h1>
@@ -38,24 +38,24 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="admin-profile">
-                <img src="../Assets/admin-icon.png" alt="Admin" class="admin-icon-img">
+                <img src="/Assets/admin-icon.png" alt="Admin" class="admin-icon-img">
                 <p class="admin-text">ADMIN</p>
             </div>
             <nav class="sidebar-menu">
                 <a href="/Page/AdminDashboard.html" class="menu-item">
-                    <img src="../Assets/event-icon.png" alt="Event" class="menu-icon-img">
+                    <img src="/Assets/event-icon.png" alt="Event" class="menu-icon-img">
                     <span class="menu-text">EVENT MANAGEMENT</span>
                 </a>
                 <a href="/Page/AdminVideos.html" class="menu-item">
-                    <img src="../Assets/video-icon.png" alt="Videos" class="menu-icon-img">
+                    <img src="/Assets/video-icon.png" alt="Videos" class="menu-icon-img">
                     <span class="menu-text">VIDEOS MANAGEMENT</span>
                 </a>
                 <a href="/Page/AdminImages.html" class="menu-item active">
-                    <img src="../Assets/images-icon.png" alt="Photos" class="menu-icon-img">
+                    <img src="/Assets/images-icon.png" alt="Photos" class="menu-icon-img">
                     <span class="menu-text">PHOTOS MANAGEMENT</span>
                 </a>
                 <a href="/Page/AdminProfile.html" class="menu-item">
-                    <img src="../Assets/profile.png" alt="Profile" class="menu-icon-img">
+                    <img src="/Assets/profile.png" alt="Profile" class="menu-icon-img">
                     <span class="menu-text">PROFILE</span>
                 </a>
             </nav>
@@ -64,7 +64,7 @@
                 <span class="menu-text">REFRESH DISPLAY</span>
             </button>
             <a href="#" class="menu-item sign-out">
-                <img src="../Assets/signout.png" alt="Sign Out" class="menu-icon-img">
+                <img src="/Assets/signout.png" alt="Sign Out" class="menu-icon-img">
                 <span class="menu-text">SIGN OUT</span>
             </a>
         </aside>
@@ -79,10 +79,30 @@
             <!-- Add Image Form -->
             <div class="form-card">
                 <h3 class="form-title">Add Image to Display in the Loop</h3>
-                <div class="form-group">
-                    <label class="form-label">Image File</label>
-                    <input type="file" id="imageFileInput" class="form-input-file" accept="image/*">
+
+                <!-- Tab Toggle -->
+                <div class="img-tab-row">
+                    <button type="button" class="img-tab active" id="tabUpload">UPLOAD FILE</button>
+                    <button type="button" class="img-tab" id="tabLink">PASTE LINK</button>
                 </div>
+
+                <!-- Upload File -->
+                <div id="panelUpload">
+                    <div class="form-group">
+                        <label class="form-label">Image File</label>
+                        <input type="file" id="imageFileInput" class="form-input-file" accept="image/*">
+                    </div>
+                </div>
+
+                <!-- Paste Link -->
+                <div id="panelLink" style="display:none;">
+                    <div class="form-group">
+                        <label class="form-label">Image URL(s)</label>
+                        <textarea id="imageLinkInput" class="form-input-file link-textarea" placeholder="Paste one or more Google Drive image links (one per line)"></textarea>
+                    </div>
+                    <p class="link-hint">For each image in Google Drive: right-click → <strong>Share</strong> → <strong>Anyone with the link</strong> → copy link and paste here.<br>You can paste multiple links, one per line.</p>
+                </div>
+
                 <div class="form-actions">
                     <button class="btn-add" id="btnAdd">ADD IMAGE</button>
                     <button class="btn-cancel" id="btnCancel">CANCEL</button>
@@ -114,9 +134,10 @@
     </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-const _app = initializeApp({ apiKey: "AIzaSyB32ggdpwiNyZ0BKXeqwhVG7_Ei2qLF-Pw", authDomain: "hcsp-scheduling-system.firebaseapp.com", projectId: "hcsp-scheduling-system", storageBucket: "hcsp-scheduling-system.firebasestorage.app", messagingSenderId: "498610158944", appId: "1:498610158944:web:d4c6778a849016e12c7205" });
+const _cfg = { apiKey: "AIzaSyB32ggdpwiNyZ0BKXeqwhVG7_Ei2qLF-Pw", authDomain: "hcsp-scheduling-system.firebaseapp.com", projectId: "hcsp-scheduling-system", storageBucket: "hcsp-scheduling-system.firebasestorage.app", messagingSenderId: "498610158944", appId: "1:498610158944:web:d4c6778a849016e12c7205" };
+const _app = getApps().length ? getApps()[0] : initializeApp(_cfg);
 const _db = getFirestore(_app);
 const _refreshDoc = doc(_db, 'system', 'refresh');
 const _btn = () => document.querySelector('.refresh-display-btn');

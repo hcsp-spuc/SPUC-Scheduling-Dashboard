@@ -143,6 +143,19 @@ body {
     object-fit: contain;
 }
 
+.admin-profile {
+    text-align: center;
+    margin-bottom: 40px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.admin-icon-img {
+    width: auto;
+    height: 120px;
+    object-fit: contain;
+}
+
 .menu-icon-img {
     width: 20px;
     height: 20px;

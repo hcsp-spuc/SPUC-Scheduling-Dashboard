@@ -1,4 +1,4 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { showModal, showConfirm, initModal } from "/Script/modal.js";
 
@@ -11,27 +11,48 @@ const firebaseConfig = {
     appId: "1:498610158944:web:d4c6778a849016e12c7205"
 };
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 initModal();
 
-const CLOUDINARY_CLOUD_NAME = "dssub5asx";
-const CLOUDINARY_UPLOAD_PRESET = "scheduling_images";
+// Tab toggle
+let activeTab = 'upload';
+document.getElementById('tabUpload').addEventListener('click', () => {
+    activeTab = 'upload';
+    document.getElementById('tabUpload').classList.add('active');
+    document.getElementById('tabLink').classList.remove('active');
+    document.getElementById('panelUpload').style.display = '';
+    document.getElementById('panelLink').style.display = 'none';
+});
+document.getElementById('tabLink').addEventListener('click', () => {
+    activeTab = 'link';
+    document.getElementById('tabLink').classList.add('active');
+    document.getElementById('tabUpload').classList.remove('active');
+    document.getElementById('panelLink').style.display = '';
+    document.getElementById('panelUpload').style.display = 'none';
+});
 
-async function uploadToCloudinary(file) {
+function convertGoogleDriveUrl(url) {
+    const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if (match) return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
+    return url;
+}
+
+const IMGBB_API_KEY = "YOUR_IMGBB_API_KEY";
+
+async function uploadToImgBB(file) {
     const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+    formData.append("image", file);
 
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+    const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
         method: "POST",
         body: formData
     });
 
-    if (!res.ok) throw new Error("Cloudinary upload failed");
+    if (!res.ok) throw new Error("ImgBB upload failed");
     const data = await res.json();
-    return { url: data.secure_url, publicId: data.public_id };
+    return { url: data.data.url, publicId: data.data.id };
 }
 
 async function loadImages() {
@@ -52,30 +73,49 @@ async function loadImages() {
     });
 }
 
-document.getElementById("btnAdd").addEventListener("click", async () => {
-    const fileInput = document.getElementById("imageFileInput");
-    const file = fileInput.files[0];
-    if (!file) return showModal("Please select an image file.", 'error');
+document.getElementById('btnAdd').addEventListener('click', async () => {
+    const btnAdd = document.getElementById('btnAdd');
 
-    const btnAdd = document.getElementById("btnAdd");
+    if (activeTab === 'link') {
+        const raw = document.getElementById('imageLinkInput').value.trim();
+        if (!raw) return showModal('Please paste at least one image URL.', 'error');
+
+        const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        let added = 0;
+        for (const line of lines) {
+            const url = convertGoogleDriveUrl(line);
+            await addDoc(collection(db, 'images'), { url, publicId: '' });
+            added++;
+        }
+        document.getElementById('imageLinkInput').value = '';
+        await loadImages();
+        showModal(`${added} image(s) added successfully!`);
+        return;
+    }
+
+    const fileInput = document.getElementById('imageFileInput');
+    const file = fileInput.files[0];
+    if (!file) return showModal('Please select an image file.', 'error');
+
     btnAdd.disabled = true;
-    btnAdd.textContent = "UPLOADING...";
+    btnAdd.textContent = 'UPLOADING...';
 
     try {
-        const { url, publicId } = await uploadToCloudinary(file);
-        await addDoc(collection(db, "images"), { url, publicId });
-        fileInput.value = "";
+        const { url, publicId } = await uploadToImgBB(file);
+        await addDoc(collection(db, 'images'), { url, publicId });
+        fileInput.value = '';
         await loadImages();
     } catch (err) {
-        showModal("Upload failed: " + err.message, 'error');
+        showModal('Upload failed: ' + err.message, 'error');
     } finally {
         btnAdd.disabled = false;
-        btnAdd.textContent = "ADD IMAGE";
+        btnAdd.textContent = 'ADD IMAGE';
     }
 });
 
-document.getElementById("btnCancel").addEventListener("click", () => {
-    document.getElementById("imageFileInput").value = "";
+document.getElementById('btnCancel').addEventListener('click', () => {
+    document.getElementById('imageFileInput').value = '';
+    document.getElementById('imageLinkInput').value = '';
 });
 
 document.getElementById("imageGrid").addEventListener("click", async (e) => {

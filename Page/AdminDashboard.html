@@ -284,9 +284,10 @@
     </div>
 
     <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-const _app = initializeApp({ apiKey: "AIzaSyB32ggdpwiNyZ0BKXeqwhVG7_Ei2qLF-Pw", authDomain: "hcsp-scheduling-system.firebaseapp.com", projectId: "hcsp-scheduling-system", storageBucket: "hcsp-scheduling-system.firebasestorage.app", messagingSenderId: "498610158944", appId: "1:498610158944:web:d4c6778a849016e12c7205" });
+const _cfg = { apiKey: "AIzaSyB32ggdpwiNyZ0BKXeqwhVG7_Ei2qLF-Pw", authDomain: "hcsp-scheduling-system.firebaseapp.com", projectId: "hcsp-scheduling-system", storageBucket: "hcsp-scheduling-system.firebasestorage.app", messagingSenderId: "498610158944", appId: "1:498610158944:web:d4c6778a849016e12c7205" };
+const _app = getApps().length ? getApps()[0] : initializeApp(_cfg);
 const _db = getFirestore(_app);
 const _refreshDoc = doc(_db, 'system', 'refresh');
 const _btn = () => document.querySelector('.refresh-display-btn');

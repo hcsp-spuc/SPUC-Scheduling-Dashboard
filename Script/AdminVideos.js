@@ -1,8 +1,9 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { showModal, showConfirm, initModal } from "/Script/modal.js";
 
 const firebaseConfig = {
+
     apiKey: "AIzaSyB32ggdpwiNyZ0BKXeqwhVG7_Ei2qLF-Pw",
     authDomain: "hcsp-scheduling-system.firebaseapp.com",
     projectId: "hcsp-scheduling-system",
@@ -12,7 +13,7 @@ const firebaseConfig = {
     measurementId: "G-GFNQXDK1LE"
 };
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // Extract YouTube video ID from URL (supports /live/ URLs too)
@@ -218,77 +219,67 @@ function validateDurationFormat(str) {
 }
 
 // Event listeners
-document.addEventListener("DOMContentLoaded", () => {
-    initModal();
-    loadVideos();
-    
-    // Duration dropdown functionality
-    const durationBtn = document.getElementById("durationBtn");
-    const durationMenu = document.getElementById("durationMenu");
-    const durationWrapper = document.querySelector(".duration-dropdown-wrapper");
-    const selectedDurationInput = document.getElementById("selectedDuration");
-    const customDurationInput = document.getElementById("customDurationInput");
-    const applyCustomDurationBtn = document.getElementById("applyCustomDuration");
-    const durationOptions = document.querySelectorAll(".duration-option");
-    
-    // Toggle dropdown
-    durationBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        durationWrapper.classList.toggle("active");
+initModal();
+loadVideos();
+
+const durationBtn = document.getElementById("durationBtn");
+const durationMenu = document.getElementById("durationMenu");
+const durationWrapper = document.querySelector(".duration-dropdown-wrapper");
+const selectedDurationInput = document.getElementById("selectedDuration");
+const customDurationInput = document.getElementById("customDurationInput");
+const applyCustomDurationBtn = document.getElementById("applyCustomDuration");
+const durationOptions = document.querySelectorAll(".duration-option");
+
+durationBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    durationWrapper.classList.toggle("active");
+});
+
+document.addEventListener("click", (e) => {
+    if (!durationWrapper.contains(e.target)) {
+        durationWrapper.classList.remove("active");
+    }
+});
+
+durationOptions.forEach(option => {
+    option.addEventListener("click", () => {
+        const value = option.getAttribute("data-value");
+        selectedDurationInput.value = value;
+        durationBtn.textContent = option.textContent;
+        durationWrapper.classList.remove("active");
+        customDurationInput.value = "";
     });
-    
-    // Close dropdown when clicking outside
-    document.addEventListener("click", (e) => {
-        if (!durationWrapper.contains(e.target)) {
-            durationWrapper.classList.remove("active");
-        }
-    });
-    
-    // Handle preset duration options
-    durationOptions.forEach(option => {
-        option.addEventListener("click", () => {
-            const value = option.getAttribute("data-value");
-            selectedDurationInput.value = value;
-            durationBtn.textContent = option.textContent;
+});
+
+applyCustomDurationBtn.addEventListener("click", () => {
+    const customValue = customDurationInput.value.trim();
+    if (customValue) {
+        if (validateDurationFormat(customValue)) {
+            selectedDurationInput.value = customValue;
+            durationBtn.textContent = `Custom: ${customValue}`;
             durationWrapper.classList.remove("active");
             customDurationInput.value = "";
-        });
-    });
-    
-    // Handle custom duration
-    applyCustomDurationBtn.addEventListener("click", () => {
-        const customValue = customDurationInput.value.trim();
-        if (customValue) {
-            if (validateDurationFormat(customValue)) {
-                selectedDurationInput.value = customValue;
-                durationBtn.textContent = `Custom: ${customValue}`;
-                durationWrapper.classList.remove("active");
-                customDurationInput.value = "";
-            } else {
-                showModal("Invalid format. Use: 30s, 2m, 1h", 'error');
-            }
+        } else {
+            showModal("Invalid format. Use: 30s, 2m, 1h", 'error');
         }
-    });
-    
-    // Allow Enter key to apply custom duration
-    customDurationInput.addEventListener("keypress", (e) => {
-        if (e.key === "Enter") {
-            applyCustomDurationBtn.click();
-        }
-    });
-    
-    document.getElementById("isLiveCheckbox").addEventListener("change", (e) => {
-        document.getElementById("durationGroup").style.display = e.target.checked ? "none" : "";
-    });
+    }
+});
 
-    document.querySelector(".btn-add").addEventListener("click", addVideo);
-    document.querySelector(".btn-cancel").addEventListener("click", () => {
-        document.querySelector(".form-input[placeholder='Youtube Video Title']").value = "";
-        document.querySelector(".form-input[placeholder='Youtube Video URL Link']").value = "";
-        selectedDurationInput.value = "";
-        durationBtn.textContent = "Select Duration";
-        customDurationInput.value = "";
-        document.getElementById("isLiveCheckbox").checked = false;
-        document.getElementById("durationGroup").style.display = "";
-    });
+customDurationInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") applyCustomDurationBtn.click();
+});
+
+document.getElementById("isLiveCheckbox").addEventListener("change", (e) => {
+    document.getElementById("durationGroup").style.display = e.target.checked ? "none" : "";
+});
+
+document.querySelector(".btn-add").addEventListener("click", addVideo);
+document.querySelector(".btn-cancel").addEventListener("click", () => {
+    document.querySelector(".form-input[placeholder='Youtube Video Title']").value = "";
+    document.querySelector(".form-input[placeholder='Youtube Video URL Link']").value = "";
+    selectedDurationInput.value = "";
+    durationBtn.textContent = "Select Duration";
+    customDurationInput.value = "";
+    document.getElementById("isLiveCheckbox").checked = false;
+    document.getElementById("durationGroup").style.display = "";
 });

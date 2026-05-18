@@ -1,4 +1,4 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, getDocs, addDoc, query, where, setDoc, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { showModal, showConfirm, showDeleteChoice, initModal } from "/Script/modal.js";
 
@@ -12,10 +12,8 @@ const firebaseConfig = {
     measurementId: "G-GFNQXDK1LE"
 };
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const db = getFirestore(app);
-
-initModal();
 
 let currentDate = new Date();
 let selectedDate = new Date();
@@ -78,16 +76,17 @@ function validateCustomTime(value) {
 }
 
 function convertTimeToMinutes(timeStr) {
-    const parts = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/);
-    if (!parts) return 0;
-    
-    let hours = parseInt(parts[1]);
-    const minutes = parseInt(parts[2]);
-    const period = parts[3];
-    
+    // Extract just the start time from a range like "6:00 - 8:00 AM" or a plain time like "8:00 PM"
+    const startPart = timeStr.split('-')[0].trim();
+    // Determine AM/PM: use the one attached to startPart, or fall back to the one at the end of the full string
+    const periodMatch = startPart.match(/(AM|PM)/i) || timeStr.match(/(AM|PM)/i);
+    const period = periodMatch ? periodMatch[1].toUpperCase() : 'AM';
+    const timePart = startPart.replace(/(AM|PM)/i, '').trim();
+    const [h, m] = timePart.split(':');
+    let hours = parseInt(h);
+    const minutes = m ? parseInt(m) : 0;
     if (period === 'PM' && hours !== 12) hours += 12;
     if (period === 'AM' && hours === 12) hours = 0;
-    
     return hours * 60 + minutes;
 }
 
@@ -959,14 +958,18 @@ async function deduplicateTimeslots() {
 }
 
 async function deleteLastWeekEvents() {
-    const startOfThisWeek = new Date();
-    startOfThisWeek.setHours(0, 0, 0, 0);
-    startOfThisWeek.setDate(startOfThisWeek.getDate() - startOfThisWeek.getDay());
+    const yesterday = new Date();
+    yesterday.setHours(0, 0, 0, 0);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toDateString();
 
     const snapshot = await getDocs(collection(db, "events"));
     const toDelete = snapshot.docs.filter(d => {
-        const eventDate = new Date(d.data().date);
-        return eventDate < startOfThisWeek;
+        const dateStr = d.data().date;
+        if (!dateStr) return false;
+        const eventDate = new Date(dateStr);
+        eventDate.setHours(0, 0, 0, 0);
+        return eventDate.toDateString() !== yesterdayStr && eventDate < yesterday;
     });
 
     await Promise.all(toDelete.map(d => deleteDoc(doc(db, "events", d.id))));
@@ -981,3 +984,4 @@ loadTimeSlots();
 loadPrograms();
 loadScheduleForDay();
 initAmPmToggles();
+initModal();
