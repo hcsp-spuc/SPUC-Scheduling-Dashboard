@@ -122,7 +122,7 @@ document.getElementById("todayDate").innerHTML =
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, getDocs, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, getDocs, doc, onSnapshot, setDoc, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
 apiKey: "AIzaSyB32ggdpwiNyZ0BKXeqwhVG7_Ei2qLF-Pw",
@@ -174,41 +174,56 @@ function parseEventTimes(timeStr) {
 }
 
 
-async function loadTodayEvents() {
+// Real-time listener scoped to today's date — Firestore only sends data
+// when it actually changes (initial load + edits), instead of polling the
+// whole collection every minute. A lightweight 60s timer separately
+// re-renders from the cached data (no Firestore read) to keep ON-GOING
+// badges, "done" styling, and the AM/PM split current with the clock.
+let cachedEventsArray = [];
+let currentSubscribedDate = null;
+let unsubscribeEvents = null;
+let isFirstSnapshot = true;
+
+function subscribeTodayEvents() {
+    const todayStr = new Date().toDateString();
+    if (currentSubscribedDate === todayStr && unsubscribeEvents) return;
+    if (unsubscribeEvents) { unsubscribeEvents(); unsubscribeEvents = null; }
+    currentSubscribedDate = todayStr;
+    isFirstSnapshot = true;
+    const todayQuery = query(collection(db, "events"), where("date", "==", todayStr));
+    unsubscribeEvents = onSnapshot(todayQuery, (snapshot) => {
+        cachedEventsArray = [];
+        snapshot.forEach(doc => cachedEventsArray.push(doc.data()));
+        renderTodayEvents(!isFirstSnapshot);
+        isFirstSnapshot = false;
+    });
+}
+
+async function renderTodayEvents(animateFade) {
     const container = document.querySelector(".list-container");
 
     // Fade out existing rows
-    const existingRows = container.querySelectorAll('.schedule-row');
-    if (existingRows.length > 0) {
-        existingRows.forEach(row => { row.style.transition = 'opacity 0.3s ease'; row.style.opacity = '0'; });
-        await new Promise(resolve => setTimeout(resolve, 320));
+    if (animateFade) {
+        const existingRows = container.querySelectorAll('.schedule-row');
+        if (existingRows.length > 0) {
+            existingRows.forEach(row => { row.style.transition = 'opacity 0.3s ease'; row.style.opacity = '0'; });
+            await new Promise(resolve => setTimeout(resolve, 320));
+        }
     }
 
-    // Show spinning logo while fetching
     const dayHighlight = document.querySelector('.day-highlight');
     const todayDateEl = document.getElementById('todayDate');
     const headerHTML = `
         <div class="schedule-header">
             <p class="subtitle">TODAY'S SCHEDULE</p>
             <h1 class="date-display" id="todayDate">
-                <span class="day-highlight">${dayHighlight ? dayHighlight.textContent : ''}</span> 
+                <span class="day-highlight">${dayHighlight ? dayHighlight.textContent : ''}</span>
                 ${todayDateEl ? todayDateEl.innerText.split(' ').slice(1).join(' ') : ''}
             </h1>
-        </div>
-        <div class="schedule-loading">
-            <img src="Assets/HCLogo.png" alt="Loading">
-            <span>Refreshing</span>
         </div>`;
     container.innerHTML = headerHTML;
 
-    const today = new Date().toDateString();
-    const snapshot = await getDocs(collection(db, "events"));
-
-    let eventsArray = [];
-    snapshot.forEach(doc => {
-        const data = doc.data();
-        if (data.date === today) eventsArray.push(data);
-    });
+    let eventsArray = [...cachedEventsArray];
 
     eventsArray.sort((a, b) => {
         const { startMinutes: startA } = parseEventTimes(a.time);
@@ -239,10 +254,6 @@ async function loadTodayEvents() {
         container.classList.add('period-switch-in');
         setTimeout(() => container.classList.remove('period-switch-in'), 600);
     }
-
-    // Remove loading spinner
-    const loadingEl = container.querySelector('.schedule-loading');
-    if (loadingEl) loadingEl.remove();
 
     if(eventsArray.length === 0) {
         const noEvents = document.createElement("div");
@@ -283,9 +294,15 @@ async function loadTodayEvents() {
 
 let lastIsPM = null;
 
-loadTodayEvents();
+subscribeTodayEvents();
 
-setInterval(()=>{ loadTodayEvents(); }, 60 * 1000);
+// Re-render every minute from the cached snapshot (no Firestore read) to
+// keep ON-GOING/done badges and the AM/PM split current; also re-subscribes
+// if the date has rolled over to a new day.
+setInterval(() => {
+    subscribeTodayEvents();
+    renderTodayEvents(false);
+}, 60 * 1000);
 
 // VIDEO DISPLAY ROTATION
 

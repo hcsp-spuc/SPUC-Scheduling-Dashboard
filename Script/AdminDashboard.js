@@ -1,5 +1,5 @@
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, getDocs, addDoc, query, where, setDoc, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, getDocs, getDoc, addDoc, query, where, setDoc, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { showModal, showConfirm, showDeleteChoice, initModal } from "/Script/modal.js";
 
 const firebaseConfig = {
@@ -985,3 +985,195 @@ loadPrograms();
 loadScheduleForDay();
 initAmPmToggles();
 initModal();
+
+// =====================
+// GOOGLE CALENDAR SYNC
+// =====================
+
+let gcalTokenClient = null;
+let gcalAccessToken = null;
+let gcalTokenResolve = null;
+let gcalAutoSyncInterval = null;
+
+async function loadGCalSettings() {
+    try {
+        const snap = await getDoc(doc(db, "settings", "googleCalendar"));
+        if (snap.exists()) {
+            const data = snap.data();
+            if (data.clientId) document.getElementById('gcalClientId').value = data.clientId;
+            if (data.calendarId) document.getElementById('gcalCalendarId').value = data.calendarId;
+        }
+    } catch(e) {}
+}
+
+function formatGCalTime(startISO, endISO) {
+    const s = new Date(startISO);
+    const e = new Date(endISO);
+    const endAmPm = e.getHours() >= 12 ? 'PM' : 'AM';
+    const fmt = (d) => {
+        const h = d.getHours() % 12 || 12;
+        const m = d.getMinutes().toString().padStart(2, '0');
+        return `${h}:${m}`;
+    };
+    return `${fmt(s)} - ${fmt(e)} ${endAmPm}`;
+}
+
+document.getElementById('gcalSaveBtn').addEventListener('click', async () => {
+    const clientId = document.getElementById('gcalClientId').value.trim();
+    const calendarId = document.getElementById('gcalCalendarId').value.trim();
+    if (!clientId || !calendarId) {
+        showModal('Please enter both Client ID and Calendar ID.', 'error');
+        return;
+    }
+    await setDoc(doc(db, "settings", "googleCalendar"), { clientId, calendarId });
+    gcalTokenClient = null;
+    showModal('Google Calendar settings saved!');
+});
+
+document.getElementById('gcalConnectBtn').addEventListener('click', () => {
+    if (!window.google?.accounts?.oauth2) {
+        showModal('Google library is still loading. Please try again in a moment.', 'error');
+        return;
+    }
+    const clientId = document.getElementById('gcalClientId').value.trim();
+    if (!clientId) {
+        showModal('Please enter your Google OAuth Client ID first.', 'error');
+        return;
+    }
+    if (!gcalTokenClient) {
+        gcalTokenClient = google.accounts.oauth2.initTokenClient({
+            client_id: clientId,
+            scope: 'https://www.googleapis.com/auth/calendar.readonly',
+            callback: (response) => {
+                if (response.error) {
+                    if (gcalTokenResolve) { gcalTokenResolve(null); gcalTokenResolve = null; }
+                    showModal('Authorization failed: ' + response.error, 'error');
+                    return;
+                }
+                gcalAccessToken = response.access_token;
+                document.getElementById('gcalBadge').style.display = 'inline-flex';
+                document.getElementById('gcalSyncBtn').disabled = false;
+                document.getElementById('gcalConnectBtn').textContent = 'RECONNECT';
+                startGCalAutoSync();
+                if (gcalTokenResolve) { gcalTokenResolve(gcalAccessToken); gcalTokenResolve = null; }
+            }
+        });
+    }
+    gcalTokenClient.requestAccessToken();
+});
+
+function requestGCalTokenSilently() {
+    return new Promise((resolve) => {
+        if (!gcalTokenClient) { resolve(null); return; }
+        gcalTokenResolve = resolve;
+        gcalTokenClient.requestAccessToken({ prompt: '' });
+    });
+}
+
+function startGCalAutoSync() {
+    if (gcalAutoSyncInterval) return;
+    gcalAutoSyncInterval = setInterval(async () => {
+        const token = await requestGCalTokenSilently();
+        if (!token) return;
+        runGCalSync(true);
+    }, 5 * 60 * 1000);
+}
+
+document.getElementById('gcalSyncBtn').addEventListener('click', () => runGCalSync(false));
+
+async function runGCalSync(isAuto) {
+    if (!gcalAccessToken) {
+        if (!isAuto) showModal('Please connect with Google first.', 'error');
+        return;
+    }
+    const calendarId = document.getElementById('gcalCalendarId').value.trim();
+    if (!calendarId) {
+        if (!isAuto) showModal('Please enter a Calendar ID.', 'error');
+        return;
+    }
+
+    const syncBtn = document.getElementById('gcalSyncBtn');
+    const resultText = document.getElementById('gcalResultText');
+    syncBtn.disabled = true;
+    syncBtn.textContent = isAuto ? 'AUTO-SYNCING...' : 'SYNCING...';
+    if (!isAuto) resultText.textContent = '';
+
+    try {
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+        const timeMin = new Date(year, month, 1).toISOString();
+        const timeMax = new Date(year, month + 1, 0, 23, 59, 59).toISOString();
+
+        const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events`
+            + `?timeMin=${encodeURIComponent(timeMin)}&timeMax=${encodeURIComponent(timeMax)}`
+            + `&singleEvents=true&orderBy=startTime`;
+
+        const res = await fetch(url, {
+            headers: { Authorization: `Bearer ${gcalAccessToken}` }
+        });
+
+        if (res.status === 401) {
+            gcalAccessToken = null;
+            document.getElementById('gcalBadge').style.display = 'none';
+            if (!isAuto) showModal('Google session expired. Please reconnect.', 'error');
+            return;
+        }
+        if (!res.ok) {
+            const errData = await res.json();
+            throw new Error(errData.error?.message || 'Failed to fetch calendar events');
+        }
+
+        const data = await res.json();
+        const timedEvents = (data.items || []).filter(e => e.start?.dateTime);
+
+        const existingSnapshot = await getDocs(collection(db, "events"));
+        let maxNum = existingSnapshot.docs.reduce((max, d) => {
+            const match = d.id.match(/^event(\d+)$/);
+            return match ? Math.max(max, parseInt(match[1])) : max;
+        }, 0);
+
+        let imported = 0;
+        let skipped = 0;
+
+        for (const event of timedEvents) {
+            const date = new Date(event.start.dateTime).toDateString();
+            const time = formatGCalTime(event.start.dateTime, event.end.dateTime);
+            const programName = (event.summary || 'Untitled').trim();
+            const description = (event.description || '').replace(/<[^>]*>/g, '').trim();
+
+            const isDuplicate = existingSnapshot.docs.some(d => {
+                const ev = d.data();
+                return ev.date === date && ev.time === time && ev.programName === programName;
+            });
+
+            if (isDuplicate) { skipped++; continue; }
+
+            await setDoc(doc(db, "events", `event${++maxNum}`), {
+                date,
+                time,
+                programName,
+                description,
+                status: 'Upcoming',
+                createdAt: new Date(),
+                source: 'google_calendar'
+            });
+            imported++;
+        }
+
+        const now = new Date();
+        const timeStamp = now.toLocaleTimeString();
+        resultText.textContent = isAuto
+            ? `Last auto-sync ${timeStamp} — Imported: ${imported}, Skipped: ${skipped}`
+            : `Imported: ${imported}  |  Skipped (duplicates): ${skipped}`;
+        await loadEventCounts();
+        loadScheduleForDay();
+    } catch (err) {
+        if (!isAuto) showModal('Sync error: ' + err.message, 'error');
+        else console.error('Auto-sync error:', err);
+    } finally {
+        syncBtn.disabled = false;
+        syncBtn.textContent = 'SYNC CURRENT MONTH';
+    }
+}
+
+loadGCalSettings();

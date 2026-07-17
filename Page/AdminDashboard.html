@@ -7,6 +7,7 @@
     <link rel="icon" type="image/png" href="../Assets/HCLogo.png">
     <link rel="stylesheet" href="../Styles/AdminDashboard.css">
     <link rel="stylesheet" href="../Styles/modal.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
     <!-- Header -->
@@ -72,6 +73,54 @@
             <div class="content-header">
                 <h2>MANAGE EVENTS/ PROGRAMS SCHEDULE</h2>
                 <div class="header-line"></div>
+            </div>
+
+            <!-- Google Calendar Sync -->
+            <div class="gcal-sync-section">
+                <div class="gcal-sync-header">
+                    <h3>SYNC FROM GOOGLE CALENDAR</h3>
+                    <span class="gcal-badge gcal-badge-connected" id="gcalBadge" style="display:none;">&#x25CF; CONNECTED</span>
+                </div>
+                <div class="gcal-settings-row">
+                    <div class="gcal-input-group">
+                        <label class="gcal-label">OAUTH CLIENT ID</label>
+                        <input type="text" id="gcalClientId" class="gcal-input" placeholder="Paste your Google OAuth 2.0 Client ID">
+                    </div>
+                    <div class="gcal-input-group">
+                        <label class="gcal-label">CALENDAR ID</label>
+                        <input type="text" id="gcalCalendarId" class="gcal-input" placeholder="e.g. example@gmail.com">
+                    </div>
+                    <button type="button" class="btn-gcal-save" id="gcalSaveBtn">SAVE</button>
+                </div>
+                <div class="gcal-action-row">
+                    <button type="button" class="btn-gcal-connect" id="gcalConnectBtn">CONNECT WITH GOOGLE</button>
+                    <button type="button" class="btn-gcal-sync" id="gcalSyncBtn" disabled>SYNC CURRENT MONTH</button>
+                    <span class="gcal-result-text" id="gcalResultText"></span>
+                </div>
+            </div>
+
+            <!-- Google Calendar Sync -->
+            <div class="gcal-sync-section">
+                <div class="gcal-sync-header">
+                    <h3>SYNC FROM GOOGLE CALENDAR</h3>
+                    <span class="gcal-badge gcal-badge-connected" id="gcalBadge" style="display:none;">&#x25CF; CONNECTED</span>
+                </div>
+                <div class="gcal-settings-row">
+                    <div class="gcal-input-group">
+                        <label class="gcal-label">OAUTH CLIENT ID</label>
+                        <input type="text" id="gcalClientId" class="gcal-input" placeholder="Paste your Google OAuth 2.0 Client ID">
+                    </div>
+                    <div class="gcal-input-group">
+                        <label class="gcal-label">CALENDAR ID</label>
+                        <input type="text" id="gcalCalendarId" class="gcal-input" placeholder="e.g. example@gmail.com">
+                    </div>
+                    <button type="button" class="btn-gcal-save" id="gcalSaveBtn">SAVE</button>
+                </div>
+                <div class="gcal-action-row">
+                    <button type="button" class="btn-gcal-connect" id="gcalConnectBtn">CONNECT WITH GOOGLE</button>
+                    <button type="button" class="btn-gcal-sync" id="gcalSyncBtn" disabled>SYNC CURRENT MONTH</button>
+                    <span class="gcal-result-text" id="gcalResultText"></span>
+                </div>
             </div>
 
             <div class="calendar-section">

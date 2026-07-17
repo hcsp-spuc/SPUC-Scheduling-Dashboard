@@ -413,6 +413,16 @@ body {
     font-style: italic;
 }
 
+.autosync-note {
+    font-size: 13px;
+    color: #1b3b72;
+    background: #eef3fb;
+    border-left: 3px solid #1b3b72;
+    padding: 10px 14px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
 .video-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);

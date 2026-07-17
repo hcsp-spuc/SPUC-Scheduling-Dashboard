@@ -1,0 +1,9 @@
+{
+  "name": "spuc-playlist-refresh",
+  "description": "Pulls the latest Hope Channel South Philippines streams into the videos collection",
+  "main": "refresh-playlist.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "private": true
+}
