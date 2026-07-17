@@ -32,48 +32,49 @@ function syncCalendarToFirestore() {
   }
   const events = calendar.getEvents(start, end);
 
-  const existing = fetchAllEvents();
-
-  let maxNum = 0;
-  existing.forEach(e => {
-    const match = e.id.match(/^event(\d+)$/);
-    if (match) maxNum = Math.max(maxNum, parseInt(match[1]));
-  });
+  const existingIds = fetchAllEventIds();
 
   let imported = 0;
   let skipped = 0;
 
+  // Each Firestore doc ID is derived from the Google Calendar event's own
+  // unique ID, so re-syncing the same event always overwrites the same
+  // document instead of racing with the in-browser sync to create a new
+  // one. updateMask limits updates to the synced fields, leaving admin-set
+  // fields like `status` untouched on repeat syncs.
   events.forEach(event => {
     const dateStr = event.getStartTime().toDateString();
     const time = formatTimeRange(event.getStartTime(), event.getEndTime());
     const programName = (event.getTitle() || 'Untitled').trim();
     const description = (event.getDescription() || '').replace(/<[^>]*>/g, '').trim();
+    const docId = ('gcal_' + event.getId()).replace(/\//g, '_');
+    const alreadyExists = existingIds.indexOf(docId) !== -1;
 
-    const isDup = existing.some(e => e.date === dateStr && e.time === time && e.programName === programName);
-    if (isDup) { skipped++; return; }
-
-    maxNum++;
-    const docId = 'event' + maxNum;
-    const body = {
-      fields: {
-        date: { stringValue: dateStr },
-        time: { stringValue: time },
-        programName: { stringValue: programName },
-        description: { stringValue: description },
-        status: { stringValue: 'Upcoming' },
-        createdAt: { timestampValue: new Date().toISOString() },
-        source: { stringValue: 'google_calendar' }
-      }
+    const fields = {
+      date: { stringValue: dateStr },
+      time: { stringValue: time },
+      programName: { stringValue: programName },
+      description: { stringValue: description },
+      source: { stringValue: 'google_calendar' }
     };
-    const resp = UrlFetchApp.fetch(`${FIRESTORE_BASE}/events/${docId}`, {
+
+    let url = `${FIRESTORE_BASE}/events/${docId}`;
+    if (alreadyExists) {
+      url += '?' + ['date', 'time', 'programName', 'description', 'source']
+        .map(f => `updateMask.fieldPaths=${encodeURIComponent(f)}`).join('&');
+    } else {
+      fields.status = { stringValue: 'Upcoming' };
+      fields.createdAt = { timestampValue: new Date().toISOString() };
+    }
+
+    const resp = UrlFetchApp.fetch(url, {
       method: 'patch',
       contentType: 'application/json',
-      payload: JSON.stringify(body),
+      payload: JSON.stringify({ fields }),
       muteHttpExceptions: true
     });
     if (resp.getResponseCode() < 300) {
-      imported++;
-      existing.push({ id: docId, date: dateStr, time, programName });
+      if (alreadyExists) skipped++; else imported++;
     } else {
       Logger.log('Failed to write ' + docId + ': ' + resp.getContentText());
     }
@@ -82,7 +83,7 @@ function syncCalendarToFirestore() {
   Logger.log(`Synced. Imported ${imported}, skipped ${skipped}`);
 }
 
-function fetchAllEvents() {
+function fetchAllEventIds() {
   const results = [];
   let pageToken = null;
   do {
@@ -91,14 +92,7 @@ function fetchAllEvents() {
     const resp = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
     const data = JSON.parse(resp.getContentText());
     (data.documents || []).forEach(doc => {
-      const f = doc.fields || {};
-      const id = doc.name.split('/').pop();
-      results.push({
-        id,
-        date: f.date ? f.date.stringValue : '',
-        time: f.time ? f.time.stringValue : '',
-        programName: f.programName ? f.programName.stringValue : ''
-      });
+      results.push(doc.name.split('/').pop());
     });
     pageToken = data.nextPageToken || null;
   } while (pageToken);

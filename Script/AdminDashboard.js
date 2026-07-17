@@ -1127,37 +1127,32 @@ async function runGCalSync(isAuto) {
         const timedEvents = (data.items || []).filter(e => e.start?.dateTime);
 
         const existingSnapshot = await getDocs(collection(db, "events"));
-        let maxNum = existingSnapshot.docs.reduce((max, d) => {
-            const match = d.id.match(/^event(\d+)$/);
-            return match ? Math.max(max, parseInt(match[1])) : max;
-        }, 0);
+        const existingIds = new Set(existingSnapshot.docs.map(d => d.id));
 
         let imported = 0;
         let skipped = 0;
 
+        // Each Firestore doc ID is derived from the Google Calendar event's own
+        // unique ID, so re-syncing the same event always overwrites the same
+        // document instead of racing with other sync sources to create a new
+        // one. `merge: true` updates the synced fields (in case the event
+        // changed) without touching admin-set fields like `status`.
         for (const event of timedEvents) {
             const date = new Date(event.start.dateTime).toDateString();
             const time = formatGCalTime(event.start.dateTime, event.end.dateTime);
             const programName = (event.summary || 'Untitled').trim();
             const description = (event.description || '').replace(/<[^>]*>/g, '').trim();
+            const docId = `gcal_${event.id}`.replace(/\//g, '_');
+            const alreadyExists = existingIds.has(docId);
 
-            const isDuplicate = existingSnapshot.docs.some(d => {
-                const ev = d.data();
-                return ev.date === date && ev.time === time && ev.programName === programName;
-            });
+            const payload = { date, time, programName, description, source: 'google_calendar' };
+            if (!alreadyExists) {
+                payload.status = 'Upcoming';
+                payload.createdAt = new Date();
+            }
 
-            if (isDuplicate) { skipped++; continue; }
-
-            await setDoc(doc(db, "events", `event${++maxNum}`), {
-                date,
-                time,
-                programName,
-                description,
-                status: 'Upcoming',
-                createdAt: new Date(),
-                source: 'google_calendar'
-            });
-            imported++;
+            await setDoc(doc(db, "events", docId), payload, { merge: true });
+            if (alreadyExists) skipped++; else imported++;
         }
 
         const now = new Date();
